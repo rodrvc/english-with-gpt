@@ -53,26 +53,26 @@
 
 ## 6. Shell del frontend
 
-- [ ] 6.1 Montar la aplicación Vite con React, enrutado y el cliente HTTP tipado contra el contrato compartido
-- [ ] 6.2 Implementar los tokens de diseño de la paleta blanco y rosado, tipografía y espaciado, con soporte de tema claro y oscuro
-- [ ] 6.3 Implementar la barra superior con los cuatro módulos, Writing activo y los otros tres marcados como próximamente sin producir errores
-- [ ] 6.4 Implementar los estados de carga y de error de la aplicación con los mensajes de error del contrato
+- [x] 6.1 Montar la aplicación Vite con React, enrutado y el cliente HTTP tipado contra el contrato compartido
+- [x] 6.2 Implementar los tokens de diseño de la paleta blanco y rosado, tipografía y espaciado, con soporte de tema claro y oscuro
+- [x] 6.3 Implementar la barra superior con los cuatro módulos, Writing activo y los otros tres marcados como próximamente sin producir errores
+- [x] 6.4 Implementar los estados de carga y de error de la aplicación con los mensajes de error del contrato
 
 ## 7. Vista de práctica de escritura
 
-- [ ] 7.1 Implementar la tarjeta del desafío con consigna, contexto, nivel, rango de palabras, registro y temporizador informativo
-- [ ] 7.2 Implementar el editor de texto plano con contador de palabras y estado de cambios sin revisar
-- [ ] 7.3 Implementar la capa de resaltado superpuesta y alineada con el editor, derivando los segmentos de los rangos de corrección
-- [ ] 7.4 Diferenciar visualmente las marcas de severidad error y de severidad estilo
-- [ ] 7.5 Implementar la invalidación de marcas al editar el texto
-- [ ] 7.6 Implementar el control de ocultar y mostrar marcas sin alterar el texto ni las correcciones almacenadas
-- [ ] 7.7 Implementar el panel de correcciones con categoría, fragmento original, propuesta y explicación
-- [ ] 7.8 Implementar el resaltado recíproco entre una corrección del panel y su tramo en el texto
-- [ ] 7.9 Implementar el panel de consejos de la IA
-- [ ] 7.10 Implementar el anillo de puntaje con el delta respecto al intento anterior y el desglose por dimensiones
-- [ ] 7.11 Implementar el envío a revisión con su estado de carga, manteniendo el texto editable
-- [ ] 7.12 Implementar el estado de sesión aprobada y la opción de iniciar un nuevo desafío
-- [ ] 7.13 Verificar que la corrección nunca se aplica automáticamente al texto del estudiante
+- [x] 7.1 Implementar la tarjeta del desafío con consigna, contexto, nivel, rango de palabras, registro y temporizador informativo
+- [x] 7.2 Implementar el editor de texto plano con contador de palabras y estado de cambios sin revisar
+- [x] 7.3 Implementar la capa de resaltado superpuesta y alineada con el editor, derivando los segmentos de los rangos de corrección
+- [x] 7.4 Diferenciar visualmente las marcas de severidad error y de severidad estilo
+- [x] 7.5 Implementar la invalidación de marcas al editar el texto
+- [x] 7.6 Implementar el control de ocultar y mostrar marcas sin alterar el texto ni las correcciones almacenadas
+- [x] 7.7 Implementar el panel de correcciones con categoría, fragmento original, propuesta y explicación
+- [x] 7.8 Implementar el resaltado recíproco entre una corrección del panel y su tramo en el texto
+- [x] 7.9 Implementar el panel de consejos de la IA
+- [x] 7.10 Implementar el anillo de puntaje con el delta respecto al intento anterior y el desglose por dimensiones
+- [x] 7.11 Implementar el envío a revisión con su estado de carga, manteniendo el texto editable
+- [x] 7.12 Implementar el estado de sesión aprobada y la opción de iniciar un nuevo desafío
+- [x] 7.13 Verificar que la corrección nunca se aplica automáticamente al texto del estudiante
 
 ## 8. Cierre
 
