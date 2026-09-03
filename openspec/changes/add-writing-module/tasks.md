@@ -1,39 +1,39 @@
 ## 1. Andamiaje del monorepo
 
-- [ ] 1.1 Crear la estructura `apps/api`, `apps/web`, `packages/shared` con workspaces de npm y TypeScript en modo estricto
-- [ ] 1.2 Configurar build y ejecución en desarrollo de ambas apps con un único comando desde la raíz
-- [ ] 1.3 Añadir `.env.example` con las variables requeridas y `.gitignore` que excluya `.env`, la base de datos y artefactos de build
-- [ ] 1.4 Configurar Vitest en `apps/api` y `packages/shared`
+- [x] 1.1 Crear la estructura `apps/api`, `apps/web`, `packages/shared` con workspaces de npm y TypeScript en modo estricto
+- [x] 1.2 Configurar build y ejecución en desarrollo de ambas apps con un único comando desde la raíz
+- [x] 1.3 Añadir `.env.example` con las variables requeridas y `.gitignore` que excluya `.env`, la base de datos y artefactos de build
+- [x] 1.4 Configurar Vitest en `apps/api` y `packages/shared`
 
 ## 2. Contrato compartido
 
-- [ ] 2.1 Definir en `packages/shared` los esquemas Zod de dominio: `Challenge`, `Session`, `Attempt`, `Correction`, `ScoreBreakdown`, `Evaluation`
-- [ ] 2.2 Definir los esquemas de petición y respuesta de cada operación de la API y exportar los tipos derivados
-- [ ] 2.3 Fijar la taxonomía de categorías y severidades, y la función que deriva severidad a partir de categoría
-- [ ] 2.4 Derivar el esquema JSON de salida estructurada para el proveedor desde los mismos esquemas Zod
-- [ ] 2.5 Tests: la derivación de severidad cubre todas las categorías; los esquemas rechazan puntajes fuera de 0..100
+- [x] 2.1 Definir en `packages/shared` los esquemas Zod de dominio: `Challenge`, `Session`, `Attempt`, `Correction`, `ScoreBreakdown`, `Evaluation`
+- [x] 2.2 Definir los esquemas de petición y respuesta de cada operación de la API y exportar los tipos derivados
+- [x] 2.3 Fijar la taxonomía de categorías y severidades, y la función que deriva severidad a partir de categoría
+- [x] 2.4 Derivar el esquema JSON de salida estructurada para el proveedor desde los mismos esquemas Zod
+- [x] 2.5 Tests: la derivación de severidad cubre todas las categorías; los esquemas rechazan puntajes fuera de 0..100
 
 ## 3. Persistencia
 
-- [ ] 3.1 Definir el esquema SQLite de `challenges`, `sessions` y `attempts` con creación idempotente al arrancar
-- [ ] 3.2 Implementar el repositorio de desafíos con consulta por identificador y filtrado por nivel y contexto
-- [ ] 3.3 Implementar el repositorio de sesiones e intentos, con numeración secuencial de intentos por sesión
-- [ ] 3.4 Escribir la semilla de al menos 8 desafíos cubriendo email laboral, carta a un amigo, instrucciones, reclamo y otros contextos, en varios niveles CEFR
-- [ ] 3.5 Tests: la numeración de intentos es correcta y consecutiva; el filtrado de desafíos devuelve solo coincidencias
+- [x] 3.1 Definir el esquema SQLite de `challenges`, `sessions` y `attempts` con creación idempotente al arrancar
+- [x] 3.2 Implementar el repositorio de desafíos con consulta por identificador y filtrado por nivel y contexto
+- [x] 3.3 Implementar el repositorio de sesiones e intentos, con numeración secuencial de intentos por sesión
+- [x] 3.4 Escribir la semilla de al menos 8 desafíos cubriendo email laboral, carta a un amigo, instrucciones, reclamo y otros contextos, en varios niveles CEFR
+- [x] 3.5 Tests: la numeración de intentos es correcta y consecutiva; el filtrado de desafíos devuelve solo coincidencias
 
 ## 4. Evaluador por IA
 
-- [ ] 4.1 Implementar el cliente de OpenAI leyendo la credencial solo desde configuración de servidor, con fallo de arranque si falta
-- [ ] 4.2 Redactar el prompt de evaluación con la rúbrica por dimensiones y la delimitación explícita del texto del estudiante como dato no ejecutable
-- [ ] 4.3 Invocar al proveedor con salida estructurada estricta y validar la respuesta contra el esquema compartido
-- [ ] 4.4 Implementar la reconciliación de anclajes: verificación directa, relocalización por búsqueda única, y descarte cuando es ambiguo o fuera de rango
-- [ ] 4.5 Implementar el descarte de correcciones con tramos superpuestos conservando la de mayor severidad
-- [ ] 4.6 Normalizar la severidad a partir de la categoría y descartar correcciones sin explicación
-- [ ] 4.7 Implementar el reintento acotado ante respuesta inválida y el error explícito de evaluación no disponible al agotarse
-- [ ] 4.8 Registrar en cada evaluación el identificador del modelo y la `rubricVersion`
-- [ ] 4.9 Generar los consejos pedagógicos considerando los intentos previos de la sesión
-- [ ] 4.10 Tests con respuestas de proveedor simuladas: anclaje correcto, anclaje desplazado recuperable, fragmento ambiguo, fuera de rango, superposición, severidad incongruente, explicación vacía
-- [ ] 4.11 Test: un texto que contiene una instrucción dirigida al evaluador no altera el resultado
+- [x] 4.1 Implementar el cliente de OpenAI leyendo la credencial solo desde configuración de servidor, con fallo de arranque si falta
+- [x] 4.2 Redactar el prompt de evaluación con la rúbrica por dimensiones y la delimitación explícita del texto del estudiante como dato no ejecutable
+- [x] 4.3 Invocar al proveedor con salida estructurada estricta y validar la respuesta contra el esquema compartido
+- [x] 4.4 Implementar la reconciliación de anclajes: verificación directa, relocalización por búsqueda única, y descarte cuando es ambiguo o fuera de rango
+- [x] 4.5 Implementar el descarte de correcciones con tramos superpuestos conservando la de mayor severidad
+- [x] 4.6 Normalizar la severidad a partir de la categoría y descartar correcciones sin explicación
+- [x] 4.7 Implementar el reintento acotado ante respuesta inválida y el error explícito de evaluación no disponible al agotarse
+- [x] 4.8 Registrar en cada evaluación el identificador del modelo y la `rubricVersion`
+- [x] 4.9 Generar los consejos pedagógicos considerando los intentos previos de la sesión
+- [x] 4.10 Tests con respuestas de proveedor simuladas: anclaje correcto, anclaje desplazado recuperable, fragmento ambiguo, fuera de rango, superposición, severidad incongruente, explicación vacía
+- [x] 4.11 Test: un texto que contiene una instrucción dirigida al evaluador no altera el resultado
 
 ## 5. API HTTP
 
