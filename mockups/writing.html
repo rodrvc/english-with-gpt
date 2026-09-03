@@ -1,0 +1,385 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>English Practice — Writing</title>
+<style>
+  :root{
+    --pink-50:#fff5f8;
+    --pink-100:#ffe6ef;
+    --pink-200:#ffd0e0;
+    --pink-300:#ffb3cd;
+    --pink-500:#ff5c93;
+    --pink-600:#e63e78;
+    --ink:#2b2430;
+    --ink-soft:#6b6270;
+    --line:#f0dbe4;
+    --white:#fff;
+    --amber:#f7a23b;
+    --green:#2fa96b;
+    --radius:16px;
+    --shadow:0 1px 2px rgba(43,36,48,.05), 0 8px 24px rgba(255,92,147,.07);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{
+    font:15px/1.55 ui-sans-serif,-apple-system,"Segoe UI",Inter,system-ui,sans-serif;
+    color:var(--ink);
+    background:
+      radial-gradient(1100px 500px at 12% -10%, var(--pink-100), transparent 60%),
+      var(--pink-50);
+    -webkit-font-smoothing:antialiased;
+  }
+
+  /* ---------- Top bar ---------- */
+  .topbar{
+    display:flex;align-items:center;gap:20px;
+    padding:14px 28px;
+    background:rgba(255,255,255,.82);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);
+    position:sticky;top:0;z-index:10;
+  }
+  .logo{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:-.02em}
+  .logo .dot{
+    width:30px;height:30px;border-radius:10px;
+    background:linear-gradient(140deg,var(--pink-500),var(--pink-300));
+    display:grid;place-items:center;color:#fff;font-size:14px;
+  }
+  .tabs{display:flex;gap:6px;margin-left:8px}
+  .tab{
+    border:1px solid transparent;background:transparent;
+    padding:8px 16px;border-radius:999px;cursor:pointer;
+    font:inherit;font-weight:600;color:var(--ink-soft);
+  }
+  .tab:hover{background:var(--pink-100);color:var(--pink-600)}
+  .tab[aria-selected="true"]{
+    background:var(--pink-500);color:#fff;
+    box-shadow:0 4px 12px rgba(255,92,147,.32);
+  }
+  .tab .sub{display:block;font-size:11px;font-weight:500;opacity:.75}
+  .spacer{flex:1}
+  .streak{
+    display:flex;align-items:center;gap:7px;font-size:13px;font-weight:600;
+    background:var(--pink-100);border:1px solid var(--pink-200);
+    padding:7px 13px;border-radius:999px;color:var(--pink-600);
+  }
+
+  /* ---------- Layout ---------- */
+  .wrap{max-width:1240px;margin:0 auto;padding:26px 28px 60px}
+  .head{display:flex;align-items:flex-start;gap:24px;margin-bottom:20px}
+  .prompt-card{
+    flex:1;background:var(--white);border:1px solid var(--line);
+    border-radius:var(--radius);padding:18px 20px;box-shadow:var(--shadow);
+  }
+  .eyebrow{
+    font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;
+    color:var(--pink-500);margin-bottom:6px;
+  }
+  .prompt-card h1{margin:0 0 6px;font-size:19px;letter-spacing:-.01em}
+  .prompt-card p{margin:0;color:var(--ink-soft);font-size:14px}
+  .chips{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+  .chip{
+    font-size:12px;font-weight:600;padding:5px 11px;border-radius:999px;
+    background:var(--pink-50);border:1px solid var(--pink-200);color:var(--pink-600);
+  }
+  .chip.neutral{background:#f7f5f8;border-color:#ece8ee;color:var(--ink-soft)}
+
+  /* score */
+  .score{
+    width:132px;flex:none;background:var(--white);border:1px solid var(--line);
+    border-radius:var(--radius);padding:16px 12px;text-align:center;box-shadow:var(--shadow);
+  }
+  .ring{position:relative;width:88px;height:88px;margin:0 auto 8px}
+  .ring svg{transform:rotate(-90deg)}
+  .ring .val{
+    position:absolute;inset:0;display:grid;place-content:center;
+    font-size:24px;font-weight:800;letter-spacing:-.03em;
+  }
+  .ring .val small{font-size:12px;font-weight:600;color:var(--ink-soft)}
+  .score .label{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft)}
+  .delta{margin-top:6px;font-size:12px;font-weight:700;color:var(--green)}
+
+  .grid{display:grid;grid-template-columns:1fr 380px;gap:20px;align-items:start}
+
+  .panel{
+    background:var(--white);border:1px solid var(--line);
+    border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;
+  }
+  .panel-head{
+    display:flex;align-items:center;gap:10px;
+    padding:12px 16px;border-bottom:1px solid var(--line);
+  }
+  .panel-head h2{margin:0;font-size:13px;font-weight:700;letter-spacing:.03em}
+  .panel-head .count{
+    font-size:11px;font-weight:700;background:var(--pink-100);color:var(--pink-600);
+    padding:2px 8px;border-radius:999px;
+  }
+
+  /* ---------- Editor ---------- */
+  .editor{
+    padding:22px 24px;min-height:400px;font-size:15.5px;line-height:1.85;
+    outline:none;
+  }
+  .editor p{margin:0 0 14px}
+  mark{
+    background:linear-gradient(transparent 62%, var(--pink-200) 62%);
+    border-bottom:2px solid var(--pink-500);
+    padding:0 1px;cursor:pointer;border-radius:2px 2px 0 0;
+  }
+  mark.style{
+    background:linear-gradient(transparent 62%, #ffe6bd 62%);
+    border-bottom-color:var(--amber);
+  }
+  mark.active{background:var(--pink-200);box-shadow:0 0 0 3px var(--pink-100)}
+
+  .editor-foot{
+    display:flex;align-items:center;gap:12px;
+    padding:12px 16px;border-top:1px solid var(--line);background:var(--pink-50);
+  }
+  .meta{font-size:12px;color:var(--ink-soft)}
+  .meta b{color:var(--ink)}
+  .btn{
+    font:inherit;font-weight:650;border-radius:10px;padding:9px 18px;cursor:pointer;
+    border:1px solid transparent;
+  }
+  .btn-primary{background:var(--pink-500);color:#fff;box-shadow:0 4px 12px rgba(255,92,147,.3)}
+  .btn-primary:hover{background:var(--pink-600)}
+  .btn-ghost{background:var(--white);border-color:var(--line);color:var(--ink-soft)}
+  .btn-ghost:hover{border-color:var(--pink-300);color:var(--pink-600)}
+
+  /* ---------- Right column ---------- */
+  .side{display:flex;flex-direction:column;gap:20px}
+  .fix{
+    padding:13px 16px;border-bottom:1px solid var(--line);cursor:pointer;
+    display:flex;gap:11px;align-items:flex-start;
+  }
+  .fix:last-child{border-bottom:none}
+  .fix:hover{background:var(--pink-50)}
+  .fix .bullet{
+    width:8px;height:8px;border-radius:3px;background:var(--pink-500);
+    margin-top:7px;flex:none;
+  }
+  .fix.style .bullet{background:var(--amber)}
+  .fix .body{flex:1;min-width:0}
+  .fix .from{
+    font-size:13.5px;text-decoration:line-through;
+    text-decoration-color:var(--pink-300);color:var(--ink-soft);
+  }
+  .fix .to{font-size:13.5px;font-weight:650;color:var(--green)}
+  .fix .why{font-size:12px;color:var(--ink-soft);margin-top:3px}
+  .fix .kind{
+    font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+    color:var(--pink-600);
+  }
+  .fix.style .kind{color:#c07a1e}
+
+  .tips{padding:16px 18px}
+  .tip{display:flex;gap:11px;margin-bottom:14px}
+  .tip:last-child{margin-bottom:0}
+  .tip .ic{
+    width:26px;height:26px;border-radius:9px;flex:none;display:grid;place-items:center;
+    background:var(--pink-100);font-size:13px;
+  }
+  .tip h3{margin:0 0 2px;font-size:13px}
+  .tip p{margin:0;font-size:12.5px;color:var(--ink-soft);line-height:1.5}
+
+  .bars{padding:14px 18px 18px}
+  .bar{margin-bottom:12px}
+  .bar:last-child{margin-bottom:0}
+  .bar-top{display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px}
+  .bar-top b{font-weight:650}
+  .bar-top span{color:var(--ink-soft)}
+  .track{height:7px;background:var(--pink-100);border-radius:999px;overflow:hidden}
+  .fill{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--pink-300),var(--pink-500))}
+
+  @media (max-width:1000px){
+    .grid{grid-template-columns:1fr}
+    .head{flex-direction:column-reverse}
+    .score{width:100%;display:flex;align-items:center;gap:16px;text-align:left}
+    .ring{margin:0}
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="logo"><span class="dot">✎</span> English Practice</div>
+  <nav class="tabs" role="tablist">
+    <button class="tab" role="tab" aria-selected="false">Speaking<span class="sub">Habla</span></button>
+    <button class="tab" role="tab" aria-selected="false">Listening<span class="sub">Escucha</span></button>
+    <button class="tab" role="tab" aria-selected="true">Writing<span class="sub">Escritura</span></button>
+    <button class="tab" role="tab" aria-selected="false">Reading<span class="sub">Lectura</span></button>
+  </nav>
+  <div class="spacer"></div>
+  <div class="streak">🔥 7 días · B1</div>
+</header>
+
+<main class="wrap">
+
+  <div class="head">
+    <section class="prompt-card">
+      <div class="eyebrow">Desafío · Email laboral</div>
+      <h1>Write an email to your manager requesting time off</h1>
+      <p>Explica las fechas, el motivo y cómo cubrirás tus tareas. Tono formal, 80–120 palabras.</p>
+      <div class="chips">
+        <span class="chip">⏱ 12:00 restantes</span>
+        <span class="chip neutral">Intento 2 de 3</span>
+        <span class="chip neutral">Nivel B1</span>
+      </div>
+    </section>
+
+    <aside class="score">
+      <div class="ring">
+        <svg width="88" height="88">
+          <circle cx="44" cy="44" r="37" fill="none" stroke="#ffe6ef" stroke-width="9"/>
+          <circle cx="44" cy="44" r="37" fill="none" stroke="#ff5c93" stroke-width="9"
+                  stroke-linecap="round" stroke-dasharray="232" stroke-dashoffset="65"/>
+        </svg>
+        <div class="val">72<small>/100</small></div>
+      </div>
+      <div class="label">Score</div>
+      <div class="delta">▲ +14 vs intento 1</div>
+    </aside>
+  </div>
+
+  <div class="grid">
+
+    <!-- Editor -->
+    <section class="panel">
+      <div class="panel-head">
+        <h2>TU TEXTO</h2>
+        <span class="count">5 sugerencias</span>
+        <div class="spacer"></div>
+        <button class="btn btn-ghost" style="padding:6px 12px;font-size:12px">👁 Ocultar marcas</button>
+      </div>
+
+      <div class="editor" contenteditable="true" spellcheck="false">
+        <p>Dear Mr. Johnson,</p>
+        <p>I <mark>am writting</mark> to you because I would like to request some days off
+        <mark class="style">for the reason that</mark> I need to travel to my hometown for a
+        family event. The dates <mark>are be</mark> from March 14 to March 18.</p>
+        <p>I already talk with Sarah and she <mark>can covers</mark> my tasks during that week.
+        All my current reports will be finished before I leave.</p>
+        <p><mark class="style">Please tell me if is ok</mark>.</p>
+        <p>Best regards,<br>Rodrigo</p>
+      </div>
+
+      <div class="editor-foot">
+        <span class="meta"><b>94</b> palabras · <b>5</b> correcciones pendientes</span>
+        <div class="spacer"></div>
+        <button class="btn btn-ghost">Guardar borrador</button>
+        <button class="btn btn-primary">Revisar con IA →</button>
+      </div>
+    </section>
+
+    <!-- Sidebar -->
+    <div class="side">
+
+      <section class="panel">
+        <div class="panel-head">
+          <h2>CORRECCIONES POSIBLES</h2>
+          <span class="count">5</span>
+        </div>
+
+        <div class="fix">
+          <span class="bullet"></span>
+          <div class="body">
+            <div class="kind">Ortografía</div>
+            <div class="from">am writting</div>
+            <div class="to">am writing</div>
+            <div class="why">"Writing" lleva una sola <i>t</i>.</div>
+          </div>
+        </div>
+
+        <div class="fix">
+          <span class="bullet"></span>
+          <div class="body">
+            <div class="kind">Gramática</div>
+            <div class="from">are be from</div>
+            <div class="to">are from</div>
+            <div class="why">No se combinan dos verbos <i>to be</i>.</div>
+          </div>
+        </div>
+
+        <div class="fix">
+          <span class="bullet"></span>
+          <div class="body">
+            <div class="kind">Concordancia</div>
+            <div class="from">she can covers</div>
+            <div class="to">she can cover</div>
+            <div class="why">Tras un modal el verbo va en infinitivo.</div>
+          </div>
+        </div>
+
+        <div class="fix style">
+          <span class="bullet"></span>
+          <div class="body">
+            <div class="kind">Estilo</div>
+            <div class="from">for the reason that</div>
+            <div class="to">because</div>
+            <div class="why">Más natural y directo en un email.</div>
+          </div>
+        </div>
+
+        <div class="fix style">
+          <span class="bullet"></span>
+          <div class="body">
+            <div class="kind">Registro</div>
+            <div class="from">Please tell me if is ok</div>
+            <div class="to">Please let me know if this works for you.</div>
+            <div class="why">Cierre formal apropiado para tu manager.</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head"><h2>IA · CONSEJOS</h2></div>
+        <div class="tips">
+          <div class="tip">
+            <span class="ic">🎯</span>
+            <div><h3>Tu patrón de error</h3>
+            <p>Repites la concordancia después de modales (<i>can covers</i>). Recuerda: modal + verbo base.</p></div>
+          </div>
+          <div class="tip">
+            <span class="ic">📈</span>
+            <div><h3>Vas mejorando</h3>
+            <p>Bajaste de 9 a 5 correcciones respecto al intento anterior. Buen avance en tiempos verbales.</p></div>
+          </div>
+          <div class="tip">
+            <span class="ic">💡</span>
+            <div><h3>Siguiente paso</h3>
+            <p>Aplica las 3 correcciones de gramática y vuelve a revisar. El estilo puedes decidirlo tú.</p></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head"><h2>DESGLOSE</h2></div>
+        <div class="bars">
+          <div class="bar">
+            <div class="bar-top"><b>Gramática</b><span>65</span></div>
+            <div class="track"><div class="fill" style="width:65%"></div></div>
+          </div>
+          <div class="bar">
+            <div class="bar-top"><b>Vocabulario</b><span>78</span></div>
+            <div class="track"><div class="fill" style="width:78%"></div></div>
+          </div>
+          <div class="bar">
+            <div class="bar-top"><b>Coherencia</b><span>84</span></div>
+            <div class="track"><div class="fill" style="width:84%"></div></div>
+          </div>
+          <div class="bar">
+            <div class="bar-top"><b>Registro / tono</b><span>61</span></div>
+            <div class="track"><div class="fill" style="width:61%"></div></div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</main>
+
+</body>
+</html>

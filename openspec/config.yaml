@@ -1,0 +1,36 @@
+schema: spec-driven
+
+# Project context (optional)
+# This is shown to AI when creating artifacts.
+# Add your tech stack, conventions, style guides, domain knowledge, etc.
+# Example:
+#   context: |
+#     Tech stack: TypeScript, React, Node.js
+#     We use conventional commits
+#     Domain: e-commerce platform
+
+# Per-artifact rules (optional)
+# Add custom rules for specific artifacts.
+# Example:
+#   rules:
+#     proposal:
+#       - Keep proposals under 500 words
+#       - Always include a "Non-goals" section
+#     tasks:
+#       - Break tasks into chunks of max 2 hours
+
+context: |
+  Producto: English Practice — plataforma de práctica de inglés con 4 módulos
+  (Speaking, Listening, Writing, Reading). Capa superior a un proyecto hermano
+  que actúa como motor de aprendizaje/métricas longitudinales.
+
+  Núcleo del producto: el estudiante recibe un problema, lo resuelve, la IA lo
+  evalúa y el estudiante ITERA hasta alcanzar un nivel correcto. La corrección
+  nunca se auto-aplica: el estudiante reescribe él mismo.
+
+  Stack: frontend Vite + React + TypeScript; backend Express + TypeScript,
+  desacoplados. El backend es la única frontera con OpenAI (la API key jamás
+  llega al browser) y se diseña como API pública para permitir clientes
+  externos y un futuro servidor MCP.
+
+  Idioma: UI en español, contenido a practicar en inglés.
