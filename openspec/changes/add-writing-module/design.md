@@ -118,3 +118,12 @@ No hay migración: es el primer cambio de un repositorio nuevo. El orden de cons
 - Umbral de aprobación: se asume 85 sobre 100 más cero errores objetivos. Ajustable tras probar con textos reales.
 - Modelo concreto de OpenAI y su costo por evaluación: se decide al implementar, exigiendo soporte de *structured outputs*.
 - Si el temporizador del desafío debe forzar el envío al agotarse o solo informar. Se asume informativo, para no penalizar la reescritura pausada.
+
+## Decisiones tomadas durante la implementación
+
+- Umbral de aprobación: se mantiene 85, pero el puntaje global se calcula en el servidor como promedio ponderado del desglose (gramática 35 %, vocabulario 20 %, coherencia 25 %, registro 20 %). El puntaje holístico del modelo se valida pero no se usa: divergía de su propio desglose y hacía inestable la aprobación.
+- Modelo: `gpt-5.4-mini` vía Responses API con `strict: true`. ~6 s y ~2 000 tokens por evaluación.
+- Temporizador: informativo; no fuerza el envío.
+- Persistencia: `node:sqlite` (API equivalente a better-sqlite3, sin dependencia nativa).
+
+Ver `review.md` para el repaso requisito a requisito.

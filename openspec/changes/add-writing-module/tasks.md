@@ -76,7 +76,7 @@
 
 ## 8. Cierre
 
-- [ ] 8.1 Verificar de punta a punta el ciclo completo: iniciar desafío, enviar texto con errores, recibir correcciones ancladas, reescribir, reenviar y aprobar
-- [ ] 8.2 Confirmar que la credencial no aparece en respuestas, errores, logs ni en el bundle del frontend
-- [ ] 8.3 Escribir el README con requisitos, configuración de variables, arranque de ambas apps y descripción de la API
-- [ ] 8.4 Repasar cada requisito de las specs contra la implementación y registrar las desviaciones
+- [x] 8.1 Verificar de punta a punta el ciclo completo: iniciar desafío, enviar texto con errores, recibir correcciones ancladas, reescribir, reenviar y aprobar
+- [x] 8.2 Confirmar que la credencial no aparece en respuestas, errores, logs ni en el bundle del frontend
+- [x] 8.3 Escribir el README con requisitos, configuración de variables, arranque de ambas apps y descripción de la API
+- [x] 8.4 Repasar cada requisito de las specs contra la implementación y registrar las desviaciones
