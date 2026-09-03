@@ -9,6 +9,7 @@ import { evaluationUnavailable, providerError } from '../errors.js';
 import type { Logger } from '../logger.js';
 import { reconcileCorrections } from './anchors.js';
 import { buildEvaluationPrompt, RUBRIC_VERSION } from './prompt.js';
+import { overallScore } from './score.js';
 import { ProviderUnavailableError, type EvaluationProvider } from './provider.js';
 
 export interface EvaluateInput {
@@ -61,11 +62,15 @@ export class Evaluator {
           discarded: discarded.map((d) => d.reason),
         });
       }
+      const score = overallScore(parsed.data.breakdown);
+      if (Math.abs(score - parsed.data.score) >= 10) {
+        this.logger.warn('evaluation.score_divergence', { model: parsed.data.score, weighted: score });
+      }
       const hasErrors = accepted.some((c) => c.severity === 'error');
-      const passed = parsed.data.score >= PASS_THRESHOLD && !hasErrors;
+      const passed = score >= PASS_THRESHOLD && !hasErrors;
 
       return {
-        score: parsed.data.score,
+        score,
         breakdown: parsed.data.breakdown,
         corrections: accepted,
         tips: parsed.data.tips.filter((t) => t.title.trim() && t.body.trim()).slice(0, 4),

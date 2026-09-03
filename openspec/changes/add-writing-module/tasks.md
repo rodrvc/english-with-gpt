@@ -37,19 +37,19 @@
 
 ## 5. API HTTP
 
-- [ ] 5.1 Montar Express con el prefijo de versión, parseo JSON y apagado ordenado
-- [ ] 5.2 Implementar el middleware de errores con el formato uniforme, códigos estables y distinción entre fallo de cliente, de servidor y de proveedor
-- [ ] 5.3 Implementar la validación de entradas contra los esquemas compartidos, incluida la longitud máxima del texto, rechazando antes de invocar al proveedor
-- [ ] 5.4 Implementar `GET /challenges` con filtros y `GET /challenges/:id`
-- [ ] 5.5 Implementar `POST /sessions` con desafío explícito o selección al azar
-- [ ] 5.6 Implementar `GET /sessions/:id` devolviendo los intentos en orden con su texto, puntaje, desglose y correcciones
-- [ ] 5.7 Implementar `POST /sessions/:id/attempts` que evalúa, persiste, calcula el delta respecto al intento previo y resuelve el criterio de aprobación
-- [ ] 5.8 Implementar `GET /export/attempts` con filtro por rango de fechas y el formato estable de exportación
-- [ ] 5.9 Implementar `GET /health` informando disponibilidad de la evaluación sin revelar configuración
-- [ ] 5.10 Implementar el límite de tasa sobre las operaciones que invocan al proveedor, informando el tiempo de reintento
-- [ ] 5.11 Configurar CORS con lista de orígenes permitidos configurable
-- [ ] 5.12 Publicar el documento de contrato legible por máquina derivado de los esquemas compartidos
-- [ ] 5.13 Tests de integración de cada operación, incluidos texto vacío, sesión inexistente, texto sobredimensionado y límite de tasa excedido
+- [x] 5.1 Montar Express con el prefijo de versión, parseo JSON y apagado ordenado
+- [x] 5.2 Implementar el middleware de errores con el formato uniforme, códigos estables y distinción entre fallo de cliente, de servidor y de proveedor
+- [x] 5.3 Implementar la validación de entradas contra los esquemas compartidos, incluida la longitud máxima del texto, rechazando antes de invocar al proveedor
+- [x] 5.4 Implementar `GET /challenges` con filtros y `GET /challenges/:id`
+- [x] 5.5 Implementar `POST /sessions` con desafío explícito o selección al azar
+- [x] 5.6 Implementar `GET /sessions/:id` devolviendo los intentos en orden con su texto, puntaje, desglose y correcciones
+- [x] 5.7 Implementar `POST /sessions/:id/attempts` que evalúa, persiste, calcula el delta respecto al intento previo y resuelve el criterio de aprobación
+- [x] 5.8 Implementar `GET /export/attempts` con filtro por rango de fechas y el formato estable de exportación
+- [x] 5.9 Implementar `GET /health` informando disponibilidad de la evaluación sin revelar configuración
+- [x] 5.10 Implementar el límite de tasa sobre las operaciones que invocan al proveedor, informando el tiempo de reintento
+- [x] 5.11 Configurar CORS con lista de orígenes permitidos configurable
+- [x] 5.12 Publicar el documento de contrato legible por máquina derivado de los esquemas compartidos
+- [x] 5.13 Tests de integración de cada operación, incluidos texto vacío, sesión inexistente, texto sobredimensionado y límite de tasa excedido
 
 ## 6. Shell del frontend
 

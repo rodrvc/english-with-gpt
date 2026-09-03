@@ -1,7 +1,7 @@
 import type { Attempt, Challenge } from '@english-practice/shared';
 
 /** Incrementar a mano cuando cambie el prompt o las reglas de evaluación. */
-export const RUBRIC_VERSION = '2026-09-03.1';
+export const RUBRIC_VERSION = '2026-09-03.3';
 
 export const TEXT_DELIMITER_START = '<<<STUDENT_TEXT>>>';
 export const TEXT_DELIMITER_END = '<<<END_STUDENT_TEXT>>>';
@@ -33,6 +33,8 @@ RUBRIC (each dimension scored 0-100 as an integer):
 
 CORRECTIONS:
 - Report EVERY objective error (spelling, grammar, agreement, punctuation, wrong vocabulary) as a correction. Also report the most valuable style improvements (register, coherence, more natural vocabulary), but at most 4 style items.
+- "error" is ONLY for things that are objectively incorrect in standard English: a misspelling, a wrong tense or verb form, a missing subject or auxiliary, wrong agreement, a wrong preposition, a wrong word, punctuation that is required by the rules. If the learner's sentence is grammatically correct and understandable but could be more formal, more natural, more polite, or more precise, that is NOT an error: report it with category register, coherence or vocabulary and severity "style".
+- Never flag as an error: optional stylistic choices such as "ok" vs "okay", ordinal suffixes in dates ("March 14" is correct), "tell me" vs "let me know", optional commas, or a plain-but-correct sentence that could be rewritten more elaborately. These are style items, or should be omitted if minor.
 - Each correction anchors to the SHORTEST span of the ORIGINAL text that contains the problem (typically 1-6 words). Do not anchor to a whole paragraph.
 - "original" MUST be an exact, verbatim substring of the learner's text, character for character (same spelling, capitalization, punctuation, spacing). Never paraphrase it. Choose a span that appears only once in the text; if a short span is repeated, extend it slightly with neighbouring words so it becomes unique.
 - "start" and "end" are your best estimate of the character offsets (0-based, end exclusive, counting UTF-16 code units, i.e. JavaScript string indexing) of "original" inside the text. The server verifies them against "original"; the quoted text is what matters most.

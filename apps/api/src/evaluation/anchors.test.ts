@@ -131,3 +131,14 @@ describe('findOccurrences', () => {
     expect(findOccurrences('abc', 'b')).toEqual([1]);
   });
 });
+
+describe('reconcileCorrections (sin cambio)', () => {
+  it('descarta correcciones cuya propuesta es idéntica al original', () => {
+    const t = 'Dear Mr. Johnson, hello.';
+    const r = reconcileCorrections(t, [
+      { category: 'coherence', severity: 'style', start: 0, end: 17, original: 'Dear Mr. Johnson,', suggestion: 'Dear Mr. Johnson,', explanation: 'x' },
+    ]);
+    expect(r.accepted).toHaveLength(0);
+    expect(r.discarded[0]!.reason).toBe('no_change');
+  });
+});

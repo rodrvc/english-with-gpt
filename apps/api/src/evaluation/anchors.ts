@@ -11,6 +11,7 @@ export type DiscardReason =
   | 'out_of_range'
   | 'not_found'
   | 'ambiguous'
+  | 'no_change'
   | 'overlap';
 
 export interface DiscardedCorrection {
@@ -67,6 +68,10 @@ export function reconcileCorrections(text: string, raw: ProviderCorrectionOutput
     }
     if (!c.original || c.original.trim() === '') {
       discarded.push({ correction: c, reason: 'empty_fragment' });
+      continue;
+    }
+    if (c.suggestion.trim() === c.original.trim()) {
+      discarded.push({ correction: c, reason: 'no_change' });
       continue;
     }
     const severity = severityForCategory(c.category, c.severity);
