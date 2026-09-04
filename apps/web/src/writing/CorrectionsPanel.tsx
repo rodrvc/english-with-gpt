@@ -28,6 +28,7 @@ export function CorrectionsPanel({ corrections, liveIds, activeId, onActivate, h
       </div>
       {!hasEvaluation && <div className="empty">Envía tu texto a revisión para recibir correcciones ancladas a tu redacción.</div>}
       {hasEvaluation && corrections.length === 0 && <div className="empty">Sin correcciones. ¡Buen trabajo!</div>}
+      <div className="fix-list">
       {corrections.map((c) => {
         const live = liveIds.has(c.id);
         return (
@@ -51,6 +52,7 @@ export function CorrectionsPanel({ corrections, liveIds, activeId, onActivate, h
           </button>
         );
       })}
+      </div>
     </section>
   );
 }

@@ -279,3 +279,16 @@ a { color: inherit; }
 .chip-action:hover:not(:disabled) { color: var(--pink-600); border-color: var(--pink-200); background: var(--pink-50); }
 .chip-action:disabled { opacity: 0.6; cursor: default; }
 .chip-action:focus-visible { outline: 2px solid var(--pink-500); outline-offset: 1px; }
+
+/* ---------- Columna lateral con scroll propio ----------
+   Con muchas correcciones la lista crecía sin límite y estiraba la página, así
+   que el editor quedaba arriba y las correcciones lejos del texto que señalan.
+   La columna acompaña el scroll y cada lista larga se desplaza por dentro. */
+@media (min-width: 1001px) {
+  .side { position: sticky; top: 84px; max-height: calc(100vh - 104px); overflow: hidden; }
+  .side > .panel { display: flex; flex-direction: column; min-height: 0; }
+  .fix-list { overflow-y: auto; overscroll-behavior: contain; }
+}
+
+/* Cabecera visible mientras se recorre la lista. */
+.fix-list { max-height: 46vh; }
