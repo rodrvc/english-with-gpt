@@ -67,6 +67,8 @@ export const api = {
   createSession: (input: CreateSessionRequest) =>
     call(SessionResponseSchema, '/sessions', { method: 'POST', body: JSON.stringify(input) }),
   getSession: (id: string) => call(SessionResponseSchema, `/sessions/${encodeURIComponent(id)}`),
+  restartTimer: (id: string) =>
+    call(SessionResponseSchema, `/sessions/${encodeURIComponent(id)}/restart-timer`, { method: 'POST' }),
   submitAttempt: (sessionId: string, text: string) =>
     call(SubmitAttemptResponseSchema, `/sessions/${encodeURIComponent(sessionId)}/attempts`, {
       method: 'POST',

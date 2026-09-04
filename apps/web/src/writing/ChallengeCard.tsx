@@ -6,6 +6,8 @@ interface Props {
   startedAt: string;
   attemptNumber: number;
   passed: boolean;
+  onRestartTimer: () => void;
+  restarting: boolean;
 }
 
 function formatClock(seconds: number): string {
@@ -14,7 +16,7 @@ function formatClock(seconds: number): string {
   return `${m}:${s.toString().padStart(2, '0')}`;
 }
 
-export function ChallengeCard({ challenge, startedAt, attemptNumber, passed }: Props) {
+export function ChallengeCard({ challenge, startedAt, attemptNumber, passed, onRestartTimer, restarting }: Props) {
   const remaining = useCountdown(startedAt, challenge.timeLimitSeconds, !passed);
   return (
     <section className="card prompt-card">
@@ -30,6 +32,17 @@ export function ChallengeCard({ challenge, startedAt, attemptNumber, passed }: P
           <span className="chip" title="Tiempo sugerido, no obligatorio">⏱ {formatClock(remaining)} restantes</span>
         ) : (
           <span className="chip warn" title="El tiempo es orientativo; puedes seguir escribiendo">⏱ Tiempo sugerido agotado</span>
+        )}
+        {!passed && (
+          <button
+            className="chip chip-action"
+            type="button"
+            disabled={restarting}
+            onClick={onRestartTimer}
+            title="Vuelve a poner el cronómetro en marcha desde ahora, sin perder tus intentos"
+          >
+            {restarting ? '…' : '↻ Reiniciar tiempo'}
+          </button>
         )}
         <span className="chip neutral">Intento {attemptNumber}</span>
         <span className="chip neutral">Nivel {challenge.level}</span>

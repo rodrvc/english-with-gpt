@@ -56,6 +56,22 @@ export class SessionRepository {
     return { id, challengeId: challenge.id, challenge, status: 'active', startedAt, attempts: [] };
   }
 
+  /**
+   * Reinicia el cronómetro de una sesión activa sin tocar sus intentos.
+   *
+   * El tiempo del desafío corre en calendario desde `started_at`, así que una
+   * sesión retomada al día siguiente aparece agotada aunque el estudiante no
+   * haya trabajado en ella. Reiniciar mueve el punto de partida a ahora y
+   * conserva el historial, que es lo que alimenta las métricas.
+   */
+  restartTimer(id: string, now = new Date()): Session | undefined {
+    const session = this.findById(id);
+    if (!session || session.status !== 'active') return undefined;
+    const startedAt = now.toISOString();
+    this.db.prepare('UPDATE sessions SET started_at = ? WHERE id = ?').run(startedAt, id);
+    return { ...session, startedAt };
+  }
+
   findById(id: string): Session | undefined {
     const row = this.db.prepare('SELECT * FROM sessions WHERE id = ?').get(id) as unknown as SessionRow | undefined;
     if (!row) return undefined;

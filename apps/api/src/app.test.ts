@@ -115,6 +115,24 @@ describe('API HTTP', () => {
     expect(missing.body.error.code).toBe('NOT_FOUND');
   });
 
+  it('POST /sessions/:id/restart-timer mueve el inicio a ahora y conserva los intentos', async () => {
+    const created = await request(app).post('/api/v1/sessions').send({ challengeId: 'work-email-time-off-b1' });
+    const id = created.body.session.id;
+    const before = created.body.session.startedAt;
+
+    const text = 'I am writting to you about the meeting.';
+    provider.queue.push(evaluationFor(text, { score: 70, withError: true }));
+    await request(app).post(`/api/v1/sessions/${id}/attempts`).send({ text });
+
+    const restarted = await request(app).post(`/api/v1/sessions/${id}/restart-timer`);
+    expect(restarted.status).toBe(200);
+    expect(new Date(restarted.body.session.startedAt).getTime()).toBeGreaterThanOrEqual(new Date(before).getTime());
+    expect(restarted.body.session.attempts).toHaveLength(1);
+
+    const missing = await request(app).post('/api/v1/sessions/nope/restart-timer');
+    expect(missing.status).toBe(404);
+  });
+
   it('GET /challenges/:id/example valida el desafío antes de necesitar el generador', async () => {
     // Sin generador configurado la ruta no puede servir el ejemplo, pero un
     // desafío inexistente sigue siendo un 404 del cliente, no un 503.

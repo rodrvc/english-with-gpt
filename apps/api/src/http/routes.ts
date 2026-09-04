@@ -121,6 +121,15 @@ export function createRouter(deps: RouteDeps): Router {
     res.json(body);
   });
 
+  router.post('/sessions/:id/restart-timer', (req, res) => {
+    const id = param(req, 'id');
+    const session = deps.sessions.findById(id);
+    if (!session) throw notFound('La sesión');
+    if (session.status !== 'active') throw sessionClosed();
+    const body: SessionResponse = { session: deps.sessions.restartTimer(id)! };
+    res.json(body);
+  });
+
   router.post('/sessions/:id/attempts', evaluationLimiter, async (req, res) => {
     const session = deps.sessions.findById(param(req, 'id'));
     if (!session) throw notFound('La sesión');

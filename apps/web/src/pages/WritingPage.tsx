@@ -53,6 +53,7 @@ export function WritingPage() {
   const [example, setExample] = useState<ChallengeExample | null>(null);
   const [exampleLoading, setExampleLoading] = useState(false);
   const [exampleError, setExampleError] = useState<unknown>(null);
+  const [restarting, setRestarting] = useState(false);
 
   // Restaurar la sesión previa (si existe) al abrir la app.
   useEffect(() => {
@@ -128,6 +129,19 @@ export function WritingPage() {
     setExampleError(null);
   }, []);
 
+  const restartTimer = useCallback(async () => {
+    if (!session || restarting) return;
+    setRestarting(true);
+    try {
+      const r = await api.restartTimer(session.id);
+      setSession(r.session);
+    } catch (e) {
+      setError(e);
+    } finally {
+      setRestarting(false);
+    }
+  }, [session, restarting]);
+
   const challengeId = session?.challenge.id ?? null;
 
   const loadExample = useCallback(() => {
@@ -200,6 +214,8 @@ export function WritingPage() {
             startedAt={session.startedAt}
             attemptNumber={session.attempts.length + (passed ? 0 : 1)}
             passed={passed}
+            onRestartTimer={restartTimer}
+            restarting={restarting}
           />
           <ScoreRing score={evaluation?.score ?? null} delta={lastAttempt?.scoreDelta ?? null} attemptNumber={lastAttempt?.number ?? null} />
         </div>
