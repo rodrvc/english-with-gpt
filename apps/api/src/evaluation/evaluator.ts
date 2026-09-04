@@ -72,6 +72,7 @@ export class Evaluator {
       return {
         score,
         breakdown: parsed.data.breakdown,
+        breakdownReasons: parsed.data.breakdownReasons,
         corrections: accepted,
         tips: parsed.data.tips.filter((t) => t.title.trim() && t.body.trim()).slice(0, 4),
         summary: parsed.data.summary,

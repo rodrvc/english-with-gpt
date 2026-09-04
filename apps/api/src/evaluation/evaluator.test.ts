@@ -24,6 +24,7 @@ function output(partial: Partial<ProviderEvaluationOutput> = {}): ProviderEvalua
   return {
     score: 70,
     breakdown: { grammar: 60, vocabulary: 75, coherence: 80, register: 70 },
+    breakdownReasons: { grammar: 'Motivo gramática.', vocabulary: 'Motivo vocabulario.', coherence: 'Motivo coherencia.', register: 'Motivo registro.' },
     corrections: [
       {
         category: 'spelling',

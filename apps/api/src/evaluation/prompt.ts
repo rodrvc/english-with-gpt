@@ -1,7 +1,7 @@
 import type { Attempt, Challenge } from '@english-practice/shared';
 
 /** Incrementar a mano cuando cambie el prompt o las reglas de evaluación. */
-export const RUBRIC_VERSION = '2026-09-03.3';
+export const RUBRIC_VERSION = '2026-09-04.1';
 
 export const TEXT_DELIMITER_START = '<<<STUDENT_TEXT>>>';
 export const TEXT_DELIMITER_END = '<<<END_STUDENT_TEXT>>>';
@@ -42,6 +42,12 @@ CORRECTIONS:
 - "suggestion" is the rewritten span only (replacing exactly "original"), not the whole sentence.
 - "explanation": a brief explanation IN SPANISH addressed to the learner, stating the rule or criterion (why the suggestion is better). Never just repeat the suggestion.
 - Categories: spelling, grammar, agreement, punctuation, vocabulary, register, coherence. Severity: "error" for objective language mistakes; "style" for improvements of naturalness, concision or register fit. spelling/grammar/agreement/punctuation are always "error"; register/coherence are always "style"; vocabulary is "error" when the word is wrong and "style" when it is merely less natural.
+
+BREAKDOWN REASONS (in Spanish, one short sentence per dimension, max ~20 words):
+- Explain WHY that dimension got that score, addressing the learner directly ("tú").
+- Name the concrete cause, not a generic label: if coherence is low because the text does not answer what the challenge asked (e.g. it describes a daily routine when the task was about a trip), say exactly that. If register is low because the text is too formal or too plain for the audience, say that.
+- When a dimension scores high, say briefly what is working, don't invent a problem.
+- Never just restate the number or repeat the dimension name.
 
 TIPS (in Spanish, 2-4 items, each with a short title and a body of 1-2 sentences):
 - If several corrections share a category, name that recurring pattern explicitly with an example.

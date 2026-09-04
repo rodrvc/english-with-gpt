@@ -337,7 +337,7 @@ export function WritingPage() {
               hasEvaluation={evaluation !== null}
             />
             <TipsPanel tips={evaluation?.tips ?? []} summary={evaluation?.summary ?? null} />
-            <BreakdownPanel breakdown={evaluation?.breakdown ?? null} />
+            <BreakdownPanel breakdown={evaluation?.breakdown ?? null} reasons={evaluation?.breakdownReasons ?? null} />
           </div>
         </div>
       </main>

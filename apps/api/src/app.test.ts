@@ -44,6 +44,7 @@ function evaluationFor(text: string, opts: { score?: number; withError?: boolean
   return {
     score: opts.score ?? 70,
     breakdown: { grammar: opts.score ?? 70, vocabulary: opts.score ?? 70, coherence: opts.score ?? 70, register: opts.score ?? 70 },
+    breakdownReasons: { grammar: 'Motivo gramática.', vocabulary: 'Motivo vocabulario.', coherence: 'Motivo coherencia.', register: 'Motivo registro.' },
     corrections,
     tips: [{ title: 'Siguiente paso', body: 'Corrige y reenvía.' }],
     summary: 'Resumen.',

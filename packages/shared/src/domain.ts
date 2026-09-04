@@ -33,6 +33,19 @@ export const ScoreBreakdownSchema = z.object({
 export type ScoreBreakdown = z.infer<typeof ScoreBreakdownSchema>;
 
 /**
+ * Motivo, en español, del puntaje de cada dimensión. Un número sin explicación
+ * no dice al estudiante qué corregir: "coherencia 15" no revela que el texto
+ * no responde a lo que pedía el desafío.
+ */
+export const BreakdownReasonsSchema = z.object({
+  grammar: z.string(),
+  vocabulary: z.string(),
+  coherence: z.string(),
+  register: z.string(),
+});
+export type BreakdownReasons = z.infer<typeof BreakdownReasonsSchema>;
+
+/**
  * Corrección anclada al texto. `start`/`end` son desplazamientos en unidades
  * de código UTF-16 sobre el texto enviado (semántica de String.prototype.slice).
  */
@@ -58,6 +71,8 @@ export type Tip = z.infer<typeof TipSchema>;
 export const EvaluationSchema = z.object({
   score: Score,
   breakdown: ScoreBreakdownSchema,
+  /** Por qué cada dimensión obtuvo su puntaje. */
+  breakdownReasons: BreakdownReasonsSchema,
   corrections: z.array(CorrectionSchema),
   tips: z.array(TipSchema),
   /** Resumen breve en español. */

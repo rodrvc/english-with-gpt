@@ -9,6 +9,7 @@ function evaluation(score: number, passed = false): Evaluation {
   return {
     score,
     breakdown: { grammar: score, vocabulary: score, coherence: score, register: score },
+    breakdownReasons: { grammar: 'Motivo.', vocabulary: 'Motivo.', coherence: 'Motivo.', register: 'Motivo.' },
     corrections: [],
     tips: [],
     summary: '',

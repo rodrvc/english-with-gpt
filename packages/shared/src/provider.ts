@@ -26,6 +26,12 @@ export const ProviderEvaluationOutputSchema = z.object({
     coherence: z.number().int(),
     register: z.number().int(),
   }),
+  breakdownReasons: z.object({
+    grammar: z.string(),
+    vocabulary: z.string(),
+    coherence: z.string(),
+    register: z.string(),
+  }),
   corrections: z.array(ProviderCorrectionOutputSchema),
   tips: z.array(z.object({ title: z.string(), body: z.string() })),
   summary: z.string(),
