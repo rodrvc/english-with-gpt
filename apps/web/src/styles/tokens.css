@@ -1,51 +1,52 @@
+/*
+ * Tema único: blanco con rosado.
+ *
+ * La app se compromete deliberadamente con un solo aspecto claro. No hay
+ * bloque `prefers-color-scheme: dark`: el editor es una superficie de lectura
+ * y escritura, y el resaltado de correcciones se calibró sobre papel blanco.
+ * `color-scheme: light` evita además que el navegador oscurezca los controles.
+ */
 :root {
-  color-scheme: light dark;
-  --pink-50: #fff5f8;
-  --pink-100: #ffe6ef;
-  --pink-200: #ffd0e0;
-  --pink-300: #ffb3cd;
-  --pink-500: #ff5c93;
-  --pink-600: #e63e78;
-  --ink: #2b2430;
-  --ink-soft: #6b6270;
-  --line: #f0dbe4;
+  color-scheme: light;
+
+  /* Rosa de acento, desaturado respecto al rosa puro para que acompañe al
+     texto en lugar de competir con él. */
+  --pink-50: #fdf7f9;
+  --pink-100: #fbedf1;
+  --pink-200: #f5dae2;
+  --pink-300: #e9adc0;
+  --pink-500: #d6537f;
+  --pink-600: #b83e66;
+
+  /* Neutrales con una leve inclinación cálida hacia el acento. */
+  --ink: #241f26;
+  --ink-soft: #736b76;
+  --line: #ece5e8;
+
   --surface: #ffffff;
-  --surface-soft: #f7f5f8;
-  --surface-soft-line: #ece8ee;
-  --bg: #fff5f8;
-  --bg-glow: #ffe6ef;
-  --amber: #f7a23b;
-  --amber-soft: #ffe6bd;
-  --amber-ink: #c07a1e;
-  --green: #2fa96b;
-  --red: #d94a4a;
-  --radius: 16px;
-  --shadow: 0 1px 2px rgba(43, 36, 48, 0.05), 0 8px 24px rgba(255, 92, 147, 0.07);
+  --surface-soft: #faf8f9;
+  --surface-soft-line: #efeaed;
+
+  /* Papel: casi blanco, sin tinte rosa perceptible. */
+  --bg: #fbfafb;
+  --bg-glow: #fbedf1;
+
+  /* Ámbar para sugerencias de estilo: distinto del acento sin ser alarmante. */
+  --amber: #c98a2e;
+  --amber-soft: #f7ecd6;
+  --amber-ink: #8a5d18;
+
+  --green: #2f855a;
+  --red: #c0413f;
+
+  --radius: 14px;
+  --shadow: 0 1px 2px rgba(36, 31, 38, 0.04), 0 6px 18px rgba(36, 31, 38, 0.05);
   --font: 15px/1.55 ui-sans-serif, -apple-system, "Segoe UI", Inter, system-ui, sans-serif;
-  --mark-error-bg: var(--pink-200);
+
+  /* Marcas sobre el texto: fondo tenue y subrayado firme, de modo que la
+     palabra siga siendo legible mientras señala el tramo. */
+  --mark-error-bg: #fbe4ea;
   --mark-error-line: var(--pink-500);
   --mark-style-bg: var(--amber-soft);
   --mark-style-line: var(--amber);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --pink-50: #2a1a22;
-    --pink-100: #3a2130;
-    --pink-200: #5a2b44;
-    --pink-300: #7d3a5c;
-    --ink: #f3e9ee;
-    --ink-soft: #b9a8b2;
-    --line: #3d2c36;
-    --surface: #1f171c;
-    --surface-soft: #2a2027;
-    --surface-soft-line: #3a2d35;
-    --bg: #171115;
-    --bg-glow: #33202b;
-    --amber-soft: #4a381c;
-    --amber-ink: #f0b968;
-    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.25);
-    --mark-error-bg: #6a2f4c;
-    --mark-style-bg: #5a4320;
-  }
 }

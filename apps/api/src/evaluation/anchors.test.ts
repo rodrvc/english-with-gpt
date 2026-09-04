@@ -102,6 +102,13 @@ describe('reconcileCorrections', () => {
     expect(r.discarded[0]!.reason).toBe('missing_explanation');
   });
 
+  it('descarta correcciones sin sugerencia', () => {
+    const s = text.indexOf('writting');
+    const r = reconcileCorrections(text, [raw({ original: 'writting', start: s, end: s + 8, suggestion: '' })]);
+    expect(r.accepted).toHaveLength(0);
+    expect(r.discarded[0]!.reason).toBe('missing_suggestion');
+  });
+
   it('devuelve las aceptadas ordenadas por posición con ids secuenciales', () => {
     const a = text.indexOf('can covers');
     const b = text.indexOf('writting');

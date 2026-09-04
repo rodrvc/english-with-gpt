@@ -7,6 +7,7 @@ import {
 
 export type DiscardReason =
   | 'missing_explanation'
+  | 'missing_suggestion'
   | 'empty_fragment'
   | 'out_of_range'
   | 'not_found'
@@ -68,6 +69,10 @@ export function reconcileCorrections(text: string, raw: ProviderCorrectionOutput
     }
     if (!c.original || c.original.trim() === '') {
       discarded.push({ correction: c, reason: 'empty_fragment' });
+      continue;
+    }
+    if (!c.suggestion || c.suggestion.trim() === '') {
+      discarded.push({ correction: c, reason: 'missing_suggestion' });
       continue;
     }
     if (c.suggestion.trim() === c.original.trim()) {
