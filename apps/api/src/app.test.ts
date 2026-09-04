@@ -115,6 +115,18 @@ describe('API HTTP', () => {
     expect(missing.body.error.code).toBe('NOT_FOUND');
   });
 
+  it('GET /challenges/:id/example valida el desafío antes de necesitar el generador', async () => {
+    // Sin generador configurado la ruta no puede servir el ejemplo, pero un
+    // desafío inexistente sigue siendo un 404 del cliente, no un 503.
+    const missing = await request(app).get('/api/v1/challenges/nope/example');
+    expect(missing.status).toBe(404);
+    expect(missing.body.error.code).toBe('NOT_FOUND');
+
+    const unavailable = await request(app).get('/api/v1/challenges/work-email-time-off-b1/example');
+    expect(unavailable.status).toBe(503);
+    expect(unavailable.body.error.code).toBe('EVALUATION_UNAVAILABLE');
+  });
+
   it('POST /sessions crea con desafío explícito, al azar con filtros, y rechaza inexistentes', async () => {
     const explicit = await request(app).post('/api/v1/sessions').send({ challengeId: 'complaint-product-b1' });
     expect(explicit.status).toBe(201);

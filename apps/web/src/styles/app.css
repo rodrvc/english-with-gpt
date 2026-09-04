@@ -217,3 +217,54 @@ a { color: inherit; }
   .ring { margin: 0; }
   .topbar { flex-wrap: wrap; }
 }
+
+/* ---------- Pestañas del panel de escritura ----------
+   Alternan qué ocupa el área del editor: el texto del estudiante, el ejemplo
+   modelo o las frases reutilizables. */
+.panel-head .tabs { display: flex; gap: 2px; margin: -4px 0; }
+.panel-head .tab {
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 650;
+  color: var(--ink-soft);
+  background: transparent;
+  border: 1px solid transparent;
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.panel-head .tab:hover { color: var(--pink-600); background: var(--pink-50); }
+.panel-head .tab[aria-selected='true'] {
+  color: var(--pink-600);
+  background: var(--pink-100);
+  border-color: var(--pink-200);
+}
+.panel-head .tab:focus-visible { outline: 2px solid var(--pink-500); outline-offset: 1px; }
+
+/* Misma altura mínima que el editor, para que alternar no salte la página. */
+.example-stack { min-height: 400px; padding: 22px 24px; overflow-y: auto; }
+
+.example-state {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 12px; min-height: 300px; color: var(--ink-soft); text-align: center;
+}
+.example-state p { margin: 0; }
+
+/* El texto modelo se lee, no se edita: métrica de lectura algo más holgada. */
+.example-text { margin: 0; max-width: 62ch; font-size: 15.5px; line-height: 1.8; color: var(--ink); }
+.example-text p { margin: 0 0 1em; }
+.example-text p:last-child { margin-bottom: 0; }
+
+.phrases { display: flex; flex-direction: column; gap: 22px; }
+.phrase-group h3 {
+  margin: 0 0 10px;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--pink-600);
+}
+.phrase-group ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.phrase-group li {
+  display: flex; flex-direction: column; gap: 2px;
+  padding-left: 12px; border-left: 2px solid var(--pink-200);
+}
+.phrase { font-size: 14.5px; font-weight: 600; color: var(--ink); }
+.phrase-meaning { font-size: 12.5px; color: var(--ink-soft); }

@@ -7,6 +7,7 @@ import {
   ListChallengesQuerySchema,
   SubmitAttemptRequestSchema,
   describeContract,
+  type ChallengeExampleResponse,
   type ExportResponse,
   type GetChallengeResponse,
   type HealthResponse,
@@ -16,14 +17,17 @@ import {
 } from '@english-practice/shared';
 import type { ChallengeRepository } from '../db/challengeRepository.js';
 import type { SessionRepository } from '../db/sessionRepository.js';
-import { AppError, notFound, sessionClosed, validation } from '../errors.js';
+import { AppError, evaluationUnavailable, notFound, sessionClosed, validation } from '../errors.js';
 import type { Evaluator } from '../evaluation/evaluator.js';
+import type { ExampleGenerator } from '../evaluation/example.js';
 import { parseOrThrow } from './validate.js';
 
 export interface RouteDeps {
   challenges: ChallengeRepository;
   sessions: SessionRepository;
   evaluator: Evaluator;
+  /** Ausente cuando no hay credencial: el ejemplo queda no disponible. */
+  examples?: ExampleGenerator;
   maxTextLength: number;
   evaluationAvailable: boolean;
   rateLimit: { max: number; windowSeconds: number };
@@ -80,6 +84,14 @@ export function createRouter(deps: RouteDeps): Router {
     const challenge = deps.challenges.findById(param(req, 'id'));
     if (!challenge) throw notFound('El desafío');
     const body: GetChallengeResponse = { challenge };
+    res.json(body);
+  });
+
+  router.get('/challenges/:id/example', evaluationLimiter, async (req, res) => {
+    const challenge = deps.challenges.findById(param(req, 'id'));
+    if (!challenge) throw notFound('El desafío');
+    if (!deps.examples) throw evaluationUnavailable('El ejemplo no está disponible: falta configurar el proveedor de IA');
+    const body: ChallengeExampleResponse = { example: await deps.examples.forChallenge(challenge) };
     res.json(body);
   });
 

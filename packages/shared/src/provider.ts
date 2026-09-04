@@ -75,3 +75,25 @@ export function providerEvaluationJsonSchema(): JsonObject {
 }
 
 export const PROVIDER_SCHEMA_NAME = 'writing_evaluation';
+
+/**
+ * Salida que se le exige al proveedor para el ejemplo de referencia de un
+ * desafío: un texto modelo y las frases reutilizables de ese contexto.
+ */
+export const ProviderExampleOutputSchema = z.object({
+  text: z.string(),
+  phrases: z.array(
+    z.object({
+      phrase: z.string(),
+      meaning: z.string(),
+      stage: z.enum(['opening', 'body', 'closing']),
+    }),
+  ),
+});
+export type ProviderExampleOutput = z.infer<typeof ProviderExampleOutputSchema>;
+
+export function providerExampleJsonSchema(): JsonObject {
+  return stripForStrictMode(z.toJSONSchema(ProviderExampleOutputSchema)) as JsonObject;
+}
+
+export const PROVIDER_EXAMPLE_SCHEMA_NAME = 'writing_example';

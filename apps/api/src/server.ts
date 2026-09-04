@@ -5,6 +5,7 @@ import { openDatabase } from './db/database.js';
 import { CHALLENGE_SEED } from './db/seed.js';
 import { SessionRepository } from './db/sessionRepository.js';
 import { Evaluator } from './evaluation/evaluator.js';
+import { ExampleGenerator } from './evaluation/example.js';
 import { OpenAIEvaluationProvider } from './evaluation/openaiProvider.js';
 import { logger } from './logger.js';
 
@@ -27,11 +28,13 @@ function main(): void {
 
   const provider = new OpenAIEvaluationProvider({ apiKey: config.openaiApiKey, model: config.openaiModel, logger });
   const evaluator = new Evaluator(provider, logger);
+  const examples = new ExampleGenerator({ apiKey: config.openaiApiKey, model: config.openaiModel, logger });
 
   const app = createApp({
     challenges,
     sessions,
     evaluator,
+    examples,
     maxTextLength: config.maxTextLength,
     evaluationAvailable: true,
     rateLimit: { max: config.rateLimitMax, windowSeconds: config.rateLimitWindowSeconds },

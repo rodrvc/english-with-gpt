@@ -1,4 +1,5 @@
 import {
+  ChallengeExampleResponseSchema,
   ErrorResponseSchema,
   GetChallengeResponseSchema,
   HealthResponseSchema,
@@ -61,6 +62,8 @@ export const api = {
   listChallenges: (filters: ListChallengesQuery = {}) =>
     call(ListChallengesResponseSchema, `/challenges${query(filters)}`),
   getChallenge: (id: string) => call(GetChallengeResponseSchema, `/challenges/${encodeURIComponent(id)}`),
+  getChallengeExample: (id: string) =>
+    call(ChallengeExampleResponseSchema, `/challenges/${encodeURIComponent(id)}/example`),
   createSession: (input: CreateSessionRequest) =>
     call(SessionResponseSchema, '/sessions', { method: 'POST', body: JSON.stringify(input) }),
   getSession: (id: string) => call(SessionResponseSchema, `/sessions/${encodeURIComponent(id)}`),

@@ -88,6 +88,32 @@ export const SubmitAttemptResponseSchema = z.object({
 });
 export type SubmitAttemptResponse = z.infer<typeof SubmitAttemptResponseSchema>;
 
+// ---------- Ejemplo de referencia ----------
+
+/**
+ * Una frase útil del contexto comunicativo del desafío, con su traducción.
+ * El estudiante las reutiliza al redactar; no pertenecen a un texto concreto.
+ */
+export const UsefulPhraseSchema = z.object({
+  phrase: z.string().min(1),
+  meaning: z.string().min(1),
+  /** Dónde encaja: apertura, desarrollo o cierre. */
+  stage: z.enum(['opening', 'body', 'closing']),
+});
+export type UsefulPhrase = z.infer<typeof UsefulPhraseSchema>;
+
+export const ChallengeExampleSchema = z.object({
+  challengeId: z.string(),
+  /** Texto modelo completo que resuelve el desafío, en inglés. */
+  text: z.string().min(1),
+  phrases: z.array(UsefulPhraseSchema),
+  model: z.string(),
+});
+export type ChallengeExample = z.infer<typeof ChallengeExampleSchema>;
+
+export const ChallengeExampleResponseSchema = z.object({ example: ChallengeExampleSchema });
+export type ChallengeExampleResponse = z.infer<typeof ChallengeExampleResponseSchema>;
+
 // ---------- Export ----------
 
 export const ExportQuerySchema = z.object({

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { PASS_THRESHOLD, type Attempt, type Session } from '@english-practice/shared';
+import { PASS_THRESHOLD, type Attempt, type ChallengeExample, type Session } from '@english-practice/shared';
 import { api } from '../api/client';
 import { ErrorBanner, Loading } from '../components/Feedback';
 import { TopBar } from '../components/TopBar';
@@ -7,10 +7,19 @@ import { BreakdownPanel } from '../writing/BreakdownPanel';
 import { ChallengeCard } from '../writing/ChallengeCard';
 import { ChallengePicker } from '../writing/ChallengePicker';
 import { CorrectionsPanel } from '../writing/CorrectionsPanel';
+import { ExamplePanel } from '../writing/ExamplePanel';
 import { HighlightEditor } from '../writing/HighlightEditor';
 import { ScoreRing } from '../writing/ScoreRing';
 import { TipsPanel } from '../writing/TipsPanel';
 import { countWords, surviveEdit } from '../writing/segments';
+
+type EditorTab = 'write' | 'example' | 'phrases';
+
+const TABS: { id: EditorTab; label: string }[] = [
+  { id: 'write', label: 'Tu texto' },
+  { id: 'example', label: 'Ejemplo' },
+  { id: 'phrases', label: 'Frases útiles' },
+];
 
 const SESSION_KEY = 'english-practice.writing.sessionId';
 
@@ -40,6 +49,10 @@ export function WritingPage() {
   const [error, setError] = useState<unknown>(null);
   const [showMarks, setShowMarks] = useState(true);
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [tab, setTab] = useState<EditorTab>('write');
+  const [example, setExample] = useState<ChallengeExample | null>(null);
+  const [exampleLoading, setExampleLoading] = useState(false);
+  const [exampleError, setExampleError] = useState<unknown>(null);
 
   // Restaurar la sesión previa (si existe) al abrir la app.
   useEffect(() => {
@@ -110,7 +123,30 @@ export function WritingPage() {
     setText('');
     setActiveId(null);
     setError(null);
+    setTab('write');
+    setExample(null);
+    setExampleError(null);
   }, []);
+
+  const challengeId = session?.challenge.id ?? null;
+
+  const loadExample = useCallback(() => {
+    if (!challengeId) return;
+    setExampleLoading(true);
+    setExampleError(null);
+    api
+      .getChallengeExample(challengeId)
+      .then((r) => setExample(r.example))
+      .catch((err) => setExampleError(err))
+      .finally(() => setExampleLoading(false));
+  }, [challengeId]);
+
+  // El ejemplo se pide la primera vez que el estudiante abre una de sus
+  // pestañas, no al cargar el desafío: quien no lo consulta no lo paga.
+  useEffect(() => {
+    if (tab === 'write' || example || exampleLoading || exampleError) return;
+    loadExample();
+  }, [tab, example, exampleLoading, exampleError, loadExample]);
 
   if (booting) {
     return (
@@ -171,10 +207,27 @@ export function WritingPage() {
         <div className="grid">
           <section className="panel" aria-label="Tu texto">
             <div className="panel-head">
-              <h2>Tu texto</h2>
-              {evaluation && <span className="count">{liveCorrections.length} {liveCorrections.length === 1 ? 'sugerencia' : 'sugerencias'}</span>}
+              <div className="tabs" role="tablist" aria-label="Vistas del desafío">
+                {TABS.map((t) => (
+                  <button
+                    key={t.id}
+                    className="tab"
+                    role="tab"
+                    type="button"
+                    aria-selected={tab === t.id}
+                    onClick={() => setTab(t.id)}
+                  >
+                    {t.label}
+                  </button>
+                ))}
+              </div>
+              {tab === 'write' && evaluation && (
+                <span className="count">
+                  {liveCorrections.length} {liveCorrections.length === 1 ? 'sugerencia' : 'sugerencias'}
+                </span>
+              )}
               <div className="spacer" />
-              {evaluation && (
+              {tab === 'write' && evaluation && (
                 <button
                   className="btn btn-ghost btn-sm"
                   type="button"
@@ -189,21 +242,47 @@ export function WritingPage() {
               )}
             </div>
 
-            <HighlightEditor
-              text={text}
-              onChange={(t) => {
-                setText(t);
-                if (activeId && !liveIds.has(activeId)) setActiveId(null);
-              }}
-              corrections={liveCorrections}
-              showMarks={showMarks}
-              activeId={activeId}
-              onActivate={setActiveId}
-              disabled={passed}
-              placeholder="Escribe aquí tu texto en inglés…"
-            />
+            {tab === 'write' ? (
+              <HighlightEditor
+                text={text}
+                onChange={(t) => {
+                  setText(t);
+                  if (activeId && !liveIds.has(activeId)) setActiveId(null);
+                }}
+                corrections={liveCorrections}
+                showMarks={showMarks}
+                activeId={activeId}
+                onActivate={setActiveId}
+                disabled={passed}
+                placeholder="Escribe aquí tu texto en inglés…"
+              />
+            ) : (
+              <div className="example-stack">
+                <ExamplePanel
+                  example={example}
+                  loading={exampleLoading}
+                  error={exampleError}
+                  view={tab === 'example' ? 'example' : 'phrases'}
+                  onRetry={loadExample}
+                />
+              </div>
+            )}
 
             <div className="editor-foot">
+              {tab !== 'write' ? (
+                <>
+                  <span className="meta">
+                    {tab === 'example'
+                      ? 'Un texto modelo para este desafío. Léelo y vuelve a escribir el tuyo.'
+                      : 'Expresiones que puedes reutilizar en tu texto.'}
+                  </span>
+                  <div className="spacer" />
+                  <button className="btn btn-primary" type="button" onClick={() => setTab('write')}>
+                    ← Volver a mi texto
+                  </button>
+                </>
+              ) : (
+              <>
               <span className="meta">
                 <b>{words}</b> palabras
                 {evaluation && (
@@ -228,6 +307,8 @@ export function WritingPage() {
               <button className="btn btn-primary" type="button" disabled={!canSubmit} onClick={submit}>
                 {submitting ? 'Revisando…' : evaluation ? 'Volver a revisar →' : 'Revisar con IA →'}
               </button>
+              </>
+              )}
             </div>
           </section>
 
