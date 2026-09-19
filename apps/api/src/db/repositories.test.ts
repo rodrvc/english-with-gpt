@@ -24,9 +24,10 @@ function evaluation(score: number, passed = false): Evaluation {
 describe('repositorios', () => {
   let challenges: ChallengeRepository;
   let sessions: SessionRepository;
+  let db: ReturnType<typeof openDatabase>;
 
   beforeEach(() => {
-    const db = openDatabase(':memory:');
+    db = openDatabase(':memory:');
     challenges = new ChallengeRepository(db);
     challenges.upsertMany(CHALLENGE_SEED);
     sessions = new SessionRepository(db, challenges);
@@ -74,6 +75,22 @@ describe('repositorios', () => {
     expect(loaded.attempts.map((a) => a.number)).toEqual([1, 2, 3]);
     expect(loaded.attempts[1]!.text).toBe('two');
     expect(loaded.status).toBe('active');
+  });
+
+  it('lee un intento guardado antes de que existiera exercised', () => {
+    // El historial anterior se lee con el esquema de hoy: agregar un campo
+    // obligatorio lo habría vuelto ilegible entero.
+    const session = sessions.create(CHALLENGE_SEED[0]!);
+    const attempt = sessions.addAttempt(session.id, 'texto', evaluation(70));
+    const row = db
+      .prepare('SELECT evaluation_json FROM attempts WHERE id = ?')
+      .get(attempt.id) as { evaluation_json: string };
+    const stored = JSON.parse(row.evaluation_json) as Record<string, unknown>;
+    delete stored['exercised'];
+    db.prepare('UPDATE attempts SET evaluation_json = ? WHERE id = ?').run(JSON.stringify(stored), attempt.id);
+
+    const read = sessions.findById(session.id)!;
+    expect(read.attempts[0]!.evaluation.exercised).toEqual([]);
   });
 
   it('la numeración es independiente por sesión', () => {

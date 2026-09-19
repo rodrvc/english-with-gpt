@@ -78,8 +78,14 @@ export const EvaluationSchema = z.object({
    * Categorías que el texto ejercitó y resolvió bien, verificadas contra el
    * texto por el servidor. Distinto de "no hubo corrección": el silencio no
    * demuestra dominio, porque el texto pudo no ejercitar la categoría.
+   *
+   * Con valor por defecto porque los intentos guardados antes de que esto
+   * existiera no lo traen, y se leen con este mismo esquema: sin el default,
+   * agregar el campo haría ilegible todo el historial anterior. Una lista
+   * vacía es además la lectura correcta de esos intentos —no se verificó
+   * nada—, no un relleno de conveniencia.
    */
-  exercised: z.array(CorrectionCategorySchema),
+  exercised: z.array(CorrectionCategorySchema).default([]),
   tips: z.array(TipSchema),
   /** Resumen breve en español. */
   summary: z.string(),
