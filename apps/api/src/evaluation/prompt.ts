@@ -1,7 +1,7 @@
 import type { Attempt, Challenge } from '@english-practice/shared';
 
 /** Incrementar a mano cuando cambie el prompt o las reglas de evaluación. */
-export const RUBRIC_VERSION = '2026-09-04.1';
+export const RUBRIC_VERSION = '2026-09-19.2';
 
 export const TEXT_DELIMITER_START = '<<<STUDENT_TEXT>>>';
 export const TEXT_DELIMITER_END = '<<<END_STUDENT_TEXT>>>';
@@ -42,6 +42,14 @@ CORRECTIONS:
 - "suggestion" is the rewritten span only (replacing exactly "original"), not the whole sentence.
 - "explanation": a brief explanation IN SPANISH addressed to the learner, stating the rule or criterion (why the suggestion is better). Never just repeat the suggestion.
 - Categories: spelling, grammar, agreement, punctuation, vocabulary, register, coherence. Severity: "error" for objective language mistakes; "style" for improvements of naturalness, concision or register fit. spelling/grammar/agreement/punctuation are always "error"; register/coherence are always "style"; vocabulary is "error" when the word is wrong and "style" when it is merely less natural.
+
+EXERCISED (what the text got RIGHT):
+- List AT MOST 3 categories the text actually PUT TO WORK and resolved correctly, each with a short verbatim quote from the learner's text as evidence.
+- Most texts exercise only one or two categories convincingly. Listing more than that is almost always wrong, whatever the quality of the writing: a strong text is not a text that demonstrates everything.
+- A category belongs here only if the text genuinely exercised it. A text with no relative clauses did not exercise them; a text with no dates did not exercise date punctuation. Absence of a mistake is NOT the same as demonstrating the skill, and this list must only contain the latter.
+- Never list a category you also reported a correction for.
+- "evidence" MUST be an exact, verbatim substring of the learner's text (2-8 words), character for character, and must be the fragment that actually demonstrates the category. The server verifies it against the text and drops anything it cannot find.
+- An empty list is a correct answer and is preferred over a generous one.
 
 BREAKDOWN REASONS (in Spanish, one short sentence per dimension, max ~20 words):
 - Explain WHY that dimension got that score, addressing the learner directly ("tú").

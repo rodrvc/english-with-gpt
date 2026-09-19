@@ -36,6 +36,7 @@ function output(partial: Partial<ProviderEvaluationOutput> = {}): ProviderEvalua
         explanation: 'Una sola t.',
       },
     ],
+    exercised: [],
     tips: [{ title: 'Siguiente paso', body: 'Revisa la ortografía.' }],
     summary: 'Bien.',
     ...partial,
@@ -69,6 +70,35 @@ describe('Evaluator', () => {
     expect(text.slice(c.start, c.end)).toBe('writting');
     expect(evaluation.passed).toBe(false);
     expect(evaluation.discardedCorrections).toBe(0);
+  });
+
+  it('acredita solo las categorías cuya cita aparece en el texto', async () => {
+    const evaluator = new Evaluator(
+      fakeProvider([
+        output({
+          corrections: [],
+          exercised: [
+            { category: 'coherence', evidence: 'She can covers' },
+            { category: 'register', evidence: 'texto que no escribió' },
+          ],
+        }),
+      ]),
+      silentLogger,
+    );
+    const result = await evaluator.evaluate({ challenge, text, previousAttempts: [] });
+    expect(result.exercised).toEqual(['coherence']);
+  });
+
+  it('no acredita una categoría que además fue corregida', async () => {
+    // La corrección sobrevive a la reconciliación, así que pesa sobre la
+    // declaración de acierto en esa misma categoría.
+    const evaluator = new Evaluator(
+      fakeProvider([output({ exercised: [{ category: 'spelling', evidence: 'I am writting' }] })]),
+      silentLogger,
+    );
+    const result = await evaluator.evaluate({ challenge, text, previousAttempts: [] });
+    expect(result.corrections.map((c) => c.category)).toContain('spelling');
+    expect(result.exercised).toEqual([]);
   });
 
   it('no aprueba con puntaje alto si quedan errores objetivos', async () => {
