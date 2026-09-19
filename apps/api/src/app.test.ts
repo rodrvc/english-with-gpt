@@ -16,8 +16,13 @@ import type { ObjectiveProgress, ProgressAttempt, ProgressTracker } from './prog
 /** Motor de seguimiento de mentira: guarda lo reportado, o falla a voluntad. */
 class RecordingTracker implements ProgressTracker {
   readonly recorded: ProgressAttempt[] = [];
+  readonly configured = true;
   failing = false;
   objectives: ObjectiveProgress[] = [];
+
+  async register(): Promise<void> {
+    if (this.failing) throw new Error('motor caído');
+  }
 
   async record(attempts: ProgressAttempt[]): Promise<void> {
     if (this.failing) throw new Error('motor caído');
@@ -355,7 +360,7 @@ describe('API HTTP', () => {
       {
         objectiveId: 'writing-grammar',
         level: 'learning',
-        score: 62,
+        score: 60,
         totalAttempts: 4,
         correctAttempts: 2,
         isDue: true,
@@ -376,8 +381,9 @@ describe('API HTTP', () => {
     expect(res.status).toBe(200);
     expect(res.body).toEqual({
       available: true,
+      configured: true,
       objectives: [
-        { category: 'grammar', level: 'learning', score: 62, totalAttempts: 4, correctAttempts: 2, isDue: true },
+        { category: 'grammar', level: 'learning', score: 60, totalAttempts: 4, correctAttempts: 2, isDue: true },
       ],
     });
   });
@@ -388,7 +394,7 @@ describe('API HTTP', () => {
     tracker.failing = true;
     const res = await request(app).get('/api/v1/progress');
     expect(res.status).toBe(200);
-    expect(res.body).toEqual({ available: false, objectives: [] });
+    expect(res.body).toEqual({ configured: true, available: false, objectives: [] });
   });
 
   it('GET /export/attempts devuelve el formato estable con filtro por fechas', async () => {

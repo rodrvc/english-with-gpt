@@ -36,6 +36,13 @@ function main(): void {
     ? new HttpProgressTracker({ baseUrl: config.progressUrl, topicId: config.progressTopic, logger })
     : noopTracker;
   if (!config.progressUrl) logger.info('progress.disabled');
+  // No bloquea el arranque: un motor caído no puede impedir que se practique,
+  // y esto se reintenta en el arranque siguiente.
+  void progress.register().catch((err: unknown) => {
+    logger.warn('progress.register_failed', {
+      error: err instanceof Error ? err.message : 'desconocido',
+    });
+  });
 
   const app = createApp({
     challenges,

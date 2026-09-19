@@ -10,6 +10,8 @@ const LEVEL_LABELS: Record<MasteryLevel, string> = {
 
 interface Props {
   objectives: ObjectiveProgress[];
+  /** `false` cuando no hay motor de seguimiento detrás. */
+  configured: boolean;
   /** `false` cuando no se pudo preguntar al motor. */
   available: boolean;
 }
@@ -22,7 +24,11 @@ interface Props {
  * último es una respuesta legítima —el motor no asigna nivel con menos de dos
  * intentos— y decirle "vas en cero" a alguien que recién empieza sería falso.
  */
-export function ProgressPanel({ objectives, available }: Props) {
+export function ProgressPanel({ objectives, configured, available }: Props) {
+  // Sin motor no hay nada que prometer: mostrar "practica un par de veces y
+  // verás tu nivel" sería ofrecer algo que no va a llegar nunca.
+  if (!configured) return null;
+
   const assessed = objectives.filter((o) => o.level !== 'unassessed');
   const due = objectives.filter((o) => o.isDue);
 
@@ -34,7 +40,7 @@ export function ProgressPanel({ objectives, available }: Props) {
         <div className="spacer" />
         {available && due.length > 0 && (
           <span className="meta">
-            <b>{due.length}</b> {due.length === 1 ? 'por repasar' : 'por repasar'}
+            <b>{due.length}</b> {due.length === 1 ? 'pendiente' : 'pendientes'} de repaso
           </span>
         )}
       </div>
@@ -57,8 +63,9 @@ export function ProgressPanel({ objectives, available }: Props) {
               <span className="mastery-name">{CATEGORY_LABELS[objective.category]}</span>
               <span className="mastery-level">{LEVEL_LABELS[objective.level]}</span>
               {objective.isDue && <span className="mastery-due">Toca repasar</span>}
-              <span className="mastery-score" aria-label={`Puntaje ${Math.round(objective.score)}`}>
-                {Math.round(objective.score)}
+              <span className="mastery-score">
+                {objective.score}
+                <span className="sr-only"> de puntaje</span>
               </span>
             </li>
           ))}

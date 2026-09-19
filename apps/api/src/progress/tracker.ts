@@ -28,6 +28,14 @@ export interface ProgressAttempt {
  * es fatal para el proceso, y este no es un fallo que valga un proceso.
  */
 export interface ProgressTracker {
+  /** `false` en el puerto inerte: no hay motor detrás. */
+  readonly configured: boolean;
+  /**
+   * Da de alta los objetivos que esta app sigue. Idempotente: el motor los
+   * absorbe sin duplicar historial. Sin esto, cada hecho se rechaza con 404 y
+   * el progreso no existe.
+   */
+  register(): Promise<void>;
   record(attempts: ProgressAttempt[]): Promise<void>;
   /**
    * Estado de cada objetivo. Lanza si no se pudo preguntar: devolver una lista
@@ -39,6 +47,8 @@ export interface ProgressTracker {
 
 /** Implementación inerte: el motor no está configurado. */
 export const noopTracker: ProgressTracker = {
+  configured: false,
+  async register(): Promise<void> {},
   async record(): Promise<void> {},
   async states(): Promise<ObjectiveProgress[]> {
     return [];

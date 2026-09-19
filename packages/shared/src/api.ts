@@ -71,10 +71,12 @@ export const ObjectiveProgressSchema = z.object({
 export type ObjectiveProgress = z.infer<typeof ObjectiveProgressSchema>;
 
 export const ProgressResponseSchema = z.object({
+  /** `false` cuando no hay motor de seguimiento: no hay nada que mostrar. */
+  configured: z.boolean(),
   /**
-   * `false` cuando no hay motor configurado o no respondió. La vista lo
-   * distingue de un historial vacío: "no hay evidencia todavía" y "no pude
-   * preguntar" no son lo mismo.
+   * `false` cuando el motor no respondió. Distinto de un historial vacío:
+   * "no hay evidencia todavía" y "no pude preguntar" no son lo mismo, y
+   * prometerle a alguien un nivel que nunca va a llegar es peor que callar.
    */
   available: z.boolean(),
   objectives: z.array(ObjectiveProgressSchema),

@@ -1,4 +1,6 @@
 import type { Logger } from '../logger.js';
+import { CATEGORY_LABELS } from '@english-practice/shared';
+import { objectiveFor, TRACKED_CATEGORIES } from './tracker.js';
 import type {
   MasteryLevel,
   ObjectiveProgress,
@@ -19,11 +21,15 @@ interface EngineState {
 
 const LEVELS = new Set<MasteryLevel>(['unassessed', 'weak', 'learning', 'competent', 'mastered']);
 
+/** El motor los serializa en mayúsculas (`WEAK`), su enum interno. */
 function toLevel(value: string): MasteryLevel {
   const level = value.toLowerCase();
-  // Un nivel desconocido es el motor hablando de algo que esta versión no
-  // entiende: tratarlo como "sin evaluar" es menos malo que inventar uno.
-  return LEVELS.has(level as MasteryLevel) ? (level as MasteryLevel) : 'unassessed';
+  if (LEVELS.has(level as MasteryLevel)) return level as MasteryLevel;
+  // No se degrada a `unassessed`: esa palabra significa "no hay evidencia" y
+  // la vista la usa para decírselo al estudiante. Un nivel que esta versión
+  // no conoce no es evidencia ausente, es una pregunta sin responder, y eso
+  // se trata como lectura fallida.
+  throw new Error(`El motor devolvió un nivel desconocido: ${value}`);
 }
 
 export interface HttpProgressTrackerOptions {
@@ -44,6 +50,7 @@ export interface HttpProgressTrackerOptions {
  * historial es valioso, pero no al precio de romper la práctica.
  */
 export class HttpProgressTracker implements ProgressTracker {
+  readonly configured = true;
   private readonly timeoutMs: number;
 
   constructor(private readonly options: HttpProgressTrackerOptions) {
@@ -68,6 +75,39 @@ export class HttpProgressTracker implements ProgressTracker {
   }
 
   /**
+   * Crea el tópico si falta y da de alta los objetivos. Ambas operaciones son
+   * idempotentes, así que correrlo en cada arranque es seguro.
+   */
+  async register(): Promise<void> {
+    const base = `${this.options.baseUrl}/topics`;
+    const topic = encodeURIComponent(this.options.topicId);
+    // 409 es que el tópico ya existe, que es el caso normal tras el primer
+    // arranque: no es un fallo.
+    const created = await fetch(base, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ topic_id: this.options.topicId, name: 'English Writing' }),
+      signal: AbortSignal.timeout(this.timeoutMs),
+    });
+    if (!created.ok && created.status !== 409) {
+      throw new Error(`El motor rechazó el tópico con ${created.status}`);
+    }
+
+    const res = await fetch(`${base}/${topic}/objectives`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        objectives: TRACKED_CATEGORIES.map((category) => ({
+          objective_id: objectiveFor(category),
+          title: CATEGORY_LABELS[category],
+        })),
+      }),
+      signal: AbortSignal.timeout(this.timeoutMs),
+    });
+    if (!res.ok) throw new Error(`El motor rechazó los objetivos con ${res.status}`);
+  }
+
+  /**
    * A diferencia de `record`, una lectura fallida sí se propaga entera: la
    * vista tiene que poder decir "no pude preguntar" en vez de mostrar un
    * historial vacío que parece un estudiante sin progreso.
@@ -80,7 +120,9 @@ export class HttpProgressTracker implements ProgressTracker {
     return body.map((state) => ({
       objectiveId: state.objective_id,
       level: toLevel(state.level),
-      score: state.score,
+      // El motor lo entrega de 0 a 1 y la app muestra puntajes de 0 a 100 en
+      // todas partes. Se convierte acá, que es donde se conocen sus unidades.
+      score: Math.round(state.score * 100),
       totalAttempts: state.total_attempts,
       correctAttempts: state.correct_attempts,
       isDue: state.is_due,

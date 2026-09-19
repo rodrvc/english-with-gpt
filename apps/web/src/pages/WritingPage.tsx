@@ -54,7 +54,11 @@ export function WritingPage() {
   const [text, setText] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<unknown>(null);
-  const [progress, setProgress] = useState<ProgressResponse>({ available: false, objectives: [] });
+  const [progress, setProgress] = useState<ProgressResponse>({
+    configured: false,
+    available: false,
+    objectives: [],
+  });
   const [showMarks, setShowMarks] = useState(true);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [tab, setTab] = useState<EditorTab>('write');
@@ -118,7 +122,7 @@ export function WritingPage() {
     try {
       setProgress(await api.progress());
     } catch {
-      setProgress({ available: false, objectives: [] });
+      setProgress({ configured: true, available: false, objectives: [] });
     }
   }, []);
 
@@ -365,7 +369,11 @@ export function WritingPage() {
             />
             <TipsPanel tips={evaluation?.tips ?? []} summary={evaluation?.summary ?? null} />
             <BreakdownPanel breakdown={evaluation?.breakdown ?? null} reasons={evaluation?.breakdownReasons ?? null} />
-            <ProgressPanel objectives={progress.objectives} available={progress.available} />
+            <ProgressPanel
+              objectives={progress.objectives}
+              configured={progress.configured}
+              available={progress.available}
+            />
           </div>
         </div>
       </main>

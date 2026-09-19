@@ -14,7 +14,7 @@ interface Received {
  * Congela la forma exacta que espera el motor. Si su contrato cambia, esto
  * falla aquí y no en silencio contra una API real.
  */
-function serve(status: number): Promise<{ url: string; received: Received[]; server: Server }> {
+function serve(status: number, payload = '{}'): Promise<{ url: string; received: Received[]; server: Server }> {
   const received: Received[] = [];
   const server = createServer((req, res) => {
     let raw = '';
@@ -22,7 +22,7 @@ function serve(status: number): Promise<{ url: string; received: Received[]; ser
     req.on('end', () => {
       received.push({ method: req.method ?? '', url: req.url ?? '', body: JSON.parse(raw || '{}') });
       res.writeHead(status, { 'Content-Type': 'application/json' });
-      res.end('{}');
+      res.end(payload);
     });
   });
   return new Promise((resolve) => {
@@ -88,5 +88,51 @@ describe('HttpProgressTracker', () => {
       timeoutMs: 500,
     });
     await expect(tracker.record([attempt, { ...attempt, attemptId: 'a1:spelling:miss' }])).rejects.toThrow();
+  });
+});
+
+describe('HttpProgressTracker.states', () => {
+  /** Tal como responde el motor: nivel en mayúsculas y puntaje de 0 a 1. */
+  const engineState = {
+    objective_id: 'writing-grammar',
+    as_of: '2026-09-19T10:00:00Z',
+    level: 'WEAK',
+    score: 0.599997,
+    total_attempts: 4,
+    correct_attempts: 2,
+    is_due: true,
+    next_review_at: '2026-09-21T10:00:00Z',
+  };
+
+  it('traduce el nivel en mayúsculas y lleva el puntaje a la escala de la app', async () => {
+    const { url, server } = await serve(200, JSON.stringify([engineState]));
+    open = server;
+    const states = await new HttpProgressTracker({
+      baseUrl: url,
+      topicId: 'english-writing',
+      logger: silentLogger,
+    }).states();
+
+    expect(states).toEqual([
+      {
+        objectiveId: 'writing-grammar',
+        level: 'weak',
+        score: 60,
+        totalAttempts: 4,
+        correctAttempts: 2,
+        isDue: true,
+        nextReviewAt: '2026-09-21T10:00:00Z',
+      },
+    ]);
+  });
+
+  it('falla ante un nivel que esta versión no conoce, en vez de inventar uno', async () => {
+    // `unassessed` significa "no hay evidencia" y la vista se lo dice al
+    // estudiante: degradar a eso convertiría un hueco del parseo en una
+    // afirmación falsa sobre su progreso.
+    const { url, server } = await serve(200, JSON.stringify([{ ...engineState, level: 'EXPERT' }]));
+    open = server;
+    const tracker = new HttpProgressTracker({ baseUrl: url, topicId: 't', logger: silentLogger });
+    await expect(tracker.states()).rejects.toThrow(/nivel desconocido/);
   });
 });
