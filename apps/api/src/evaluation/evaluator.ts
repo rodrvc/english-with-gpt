@@ -8,6 +8,7 @@ import {
 import { evaluationUnavailable, providerError } from '../errors.js';
 import type { Logger } from '../logger.js';
 import { reconcileCorrections } from './anchors.js';
+import { verifyExercised } from './exercised.js';
 import { buildEvaluationPrompt, RUBRIC_VERSION } from './prompt.js';
 import { overallScore } from './score.js';
 import { ProviderUnavailableError, type EvaluationProvider } from './provider.js';
@@ -66,6 +67,11 @@ export class Evaluator {
       if (Math.abs(score - parsed.data.score) >= 10) {
         this.logger.warn('evaluation.score_divergence', { model: parsed.data.score, weighted: score });
       }
+      // Contra las correcciones aceptadas, no las declaradas: una corrección
+      // descartada por anclaje inválido no es evidencia de nada.
+      const corrected = new Set(accepted.map((c) => c.category));
+      const exercised = verifyExercised(input.text, parsed.data.exercised, corrected);
+
       const hasErrors = accepted.some((c) => c.severity === 'error');
       const passed = score >= PASS_THRESHOLD && !hasErrors;
 
@@ -74,6 +80,7 @@ export class Evaluator {
         breakdown: parsed.data.breakdown,
         breakdownReasons: parsed.data.breakdownReasons,
         corrections: accepted,
+        exercised,
         tips: parsed.data.tips.filter((t) => t.title.trim() && t.body.trim()).slice(0, 4),
         summary: parsed.data.summary,
         passed,

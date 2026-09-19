@@ -330,6 +330,7 @@ export function WritingPage() {
 
           <div className="side">
             <CorrectionsPanel
+              exercised={evaluation?.exercised ?? []}
               corrections={evaluation?.corrections ?? []}
               liveIds={liveIds}
               activeId={activeId}

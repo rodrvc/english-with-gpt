@@ -1,7 +1,9 @@
-import { CATEGORY_LABELS, type Correction } from '@english-practice/shared';
+import { CATEGORY_LABELS, type Correction, type CorrectionCategory } from '@english-practice/shared';
 
 interface Props {
   corrections: Correction[];
+  /** Categorías que el texto ejercitó y resolvió bien. */
+  exercised: CorrectionCategory[];
   liveIds: Set<string>;
   activeId: string | null;
   onActivate: (id: string | null) => void;
@@ -12,7 +14,7 @@ interface Props {
  * Lista de correcciones propuestas. Son información adyacente: el estudiante
  * reescribe por sí mismo. No existe ningún botón de "aplicar".
  */
-export function CorrectionsPanel({ corrections, liveIds, activeId, onActivate, hasEvaluation }: Props) {
+export function CorrectionsPanel({ corrections, exercised, liveIds, activeId, onActivate, hasEvaluation }: Props) {
   const errors = corrections.filter((c) => c.severity === 'error').length;
   return (
     <section className="panel" aria-label="Correcciones posibles">
@@ -28,6 +30,16 @@ export function CorrectionsPanel({ corrections, liveIds, activeId, onActivate, h
       </div>
       {!hasEvaluation && <div className="empty">Envía tu texto a revisión para recibir correcciones ancladas a tu redacción.</div>}
       {hasEvaluation && corrections.length === 0 && <div className="empty">Sin correcciones. ¡Buen trabajo!</div>}
+      {hasEvaluation && exercised.length > 0 && (
+        <div className="exercised">
+          <div className="exercised-head">Resolviste bien</div>
+          <ul className="exercised-list">
+            {exercised.map((category) => (
+              <li key={category}>{CATEGORY_LABELS[category]}</li>
+            ))}
+          </ul>
+        </div>
+      )}
       <div className="fix-list">
       {corrections.map((c) => {
         const live = liveIds.has(c.id);

@@ -74,6 +74,12 @@ export const EvaluationSchema = z.object({
   /** Por qué cada dimensión obtuvo su puntaje. */
   breakdownReasons: BreakdownReasonsSchema,
   corrections: z.array(CorrectionSchema),
+  /**
+   * Categorías que el texto ejercitó y resolvió bien, verificadas contra el
+   * texto por el servidor. Distinto de "no hubo corrección": el silencio no
+   * demuestra dominio, porque el texto pudo no ejercitar la categoría.
+   */
+  exercised: z.array(CorrectionCategorySchema),
   tips: z.array(TipSchema),
   /** Resumen breve en español. */
   summary: z.string(),

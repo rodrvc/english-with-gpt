@@ -18,6 +18,17 @@ export const ProviderCorrectionOutputSchema = z.object({
 });
 export type ProviderCorrectionOutput = z.infer<typeof ProviderCorrectionOutputSchema>;
 
+/**
+ * Una categoría que el texto puso a prueba y resolvió bien. Exige una cita
+ * porque una etiqueta suelta es una afirmación sin respaldo: pedir el
+ * fragmento obliga al modelo a señalar dónde ocurrió.
+ */
+export const ProviderExercisedOutputSchema = z.object({
+  category: CorrectionCategorySchema,
+  evidence: z.string(),
+});
+export type ProviderExercisedOutput = z.infer<typeof ProviderExercisedOutputSchema>;
+
 export const ProviderEvaluationOutputSchema = z.object({
   score: z.number().int(),
   breakdown: z.object({
@@ -33,6 +44,7 @@ export const ProviderEvaluationOutputSchema = z.object({
     register: z.string(),
   }),
   corrections: z.array(ProviderCorrectionOutputSchema),
+  exercised: z.array(ProviderExercisedOutputSchema),
   tips: z.array(z.object({ title: z.string(), body: z.string() })),
   summary: z.string(),
 });

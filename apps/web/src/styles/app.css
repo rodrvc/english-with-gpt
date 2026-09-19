@@ -168,6 +168,15 @@ a { color: inherit; }
 .fix .stale-tag { font-size: 10px; font-weight: 600; color: var(--amber-ink); margin-left: 6px; text-transform: none; letter-spacing: 0; }
 .empty { padding: 16px 18px; font-size: 13px; color: var(--ink-soft); }
 
+/*
+ * Lo que salió bien. Deliberadamente más discreto que una corrección: informa
+ * sin competir con lo que hay que arreglar, que es donde está la tarea.
+ */
+.exercised { padding: 12px 18px 16px; border-top: 1px solid var(--line); }
+.exercised-head { font-size: 11.5px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-soft); margin-bottom: 8px; }
+.exercised-list { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.exercised-list li { font-size: 12px; padding: 3px 9px; border-radius: 999px; color: var(--green); background: color-mix(in srgb, var(--green) 9%, transparent); }
+
 .tips { padding: 16px 18px; }
 .tip { display: flex; gap: 11px; margin-bottom: 14px; }
 .tip:last-child { margin-bottom: 0; }

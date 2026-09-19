@@ -79,6 +79,7 @@ Cada intento devuelve una `evaluation` con:
 - `breakdown`: `grammar`, `vocabulary`, `coherence`, `register` (0–100 cada uno).
 - `corrections[]`: `{ id, category, severity, start, end, original, suggestion, explanation }`. `start`/`end` son desplazamientos en unidades UTF-16 sobre el texto enviado (semántica de `String.prototype.slice`), **verificados en el servidor**: el fragmento citado es autoritativo; si los índices del modelo no coinciden se relocaliza por búsqueda única o se descarta.
 - `severity`: `error` (ortografía, gramática, concordancia, puntuación, y vocabulario incorrecto) o `style` (registro, coherencia, vocabulario poco natural). Se deriva de la categoría en código.
+- `exercised[]`: categorías que el texto **ejercitó y resolvió bien**, verificadas en el servidor contra una cita literal. No es lo mismo que "no hubo corrección": un texto que nunca usó artículos no demuestra dominarlos, así que el silencio no acredita nada. Sin cita utilizable la categoría se descarta.
 - `tips[]` y `summary` en español; `passed`; `model` y `rubricVersion` para trazabilidad.
 
 **Criterio de aprobación:** `score ≥ 85` **y** cero correcciones de severidad `error`. Las de estilo no bloquean.
