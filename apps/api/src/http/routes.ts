@@ -18,6 +18,9 @@ import {
 import type { ChallengeRepository } from '../db/challengeRepository.js';
 import type { SessionRepository } from '../db/sessionRepository.js';
 import { AppError, evaluationUnavailable, notFound, sessionClosed, validation } from '../errors.js';
+import type { Logger } from '../logger.js';
+import { attemptsFrom } from '../progress/attempts.js';
+import type { ProgressTracker } from '../progress/tracker.js';
 import type { Evaluator } from '../evaluation/evaluator.js';
 import type { ExampleGenerator } from '../evaluation/example.js';
 import { parseOrThrow } from './validate.js';
@@ -28,6 +31,9 @@ export interface RouteDeps {
   evaluator: Evaluator;
   /** Ausente cuando no hay credencial: el ejemplo queda no disponible. */
   examples?: ExampleGenerator;
+  /** Motor de seguimiento. Inerte cuando no está configurado. */
+  progress: ProgressTracker;
+  logger: Logger;
   maxTextLength: number;
   evaluationAvailable: boolean;
   rateLimit: { max: number; windowSeconds: number };
@@ -151,6 +157,15 @@ export function createRouter(deps: RouteDeps): Router {
     const updated = deps.sessions.findById(session.id)!;
     const body: SubmitAttemptResponse = { attempt, session: updated };
     res.status(201).json(body);
+
+    // Después de responder: el historial no puede demorar ni romper la práctica.
+    // El rechazo se atrapa aquí; si escapara, sería una promesa sin manejar.
+    void deps.progress.record(attemptsFrom(attempt, evaluation)).catch((err: unknown) => {
+      deps.logger.warn('progress.record_failed', {
+        attemptId: attempt.id,
+        error: err instanceof Error ? err.message : 'desconocido',
+      });
+    });
   });
 
   router.get('/export/attempts', (req, res) => {
