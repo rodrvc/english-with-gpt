@@ -116,8 +116,13 @@ export class HttpProgressTracker implements ProgressTracker {
     const url = `${this.options.baseUrl}/topics/${encodeURIComponent(this.options.topicId)}/objectives/states`;
     const res = await fetch(url, { signal: AbortSignal.timeout(this.timeoutMs) });
     if (!res.ok) throw new Error(`El motor respondió ${res.status}`);
-    const body = (await res.json()) as EngineState[];
-    return body.map((state) => ({
+    const body: unknown = await res.json();
+    // Una deriva del contrato llega típicamente como un objeto donde se
+    // esperaba una lista: fallar acá lo dice, en vez de propagar `undefined`
+    // campo por campo hasta que algo más abajo se rompa.
+    if (!Array.isArray(body)) throw new Error('El motor devolvió algo que no es una lista de estados');
+    const states = body as EngineState[];
+    return states.map((state) => ({
       objectiveId: state.objective_id,
       level: toLevel(state.level),
       // El motor lo entrega de 0 a 1 y la app muestra puntajes de 0 a 100 en

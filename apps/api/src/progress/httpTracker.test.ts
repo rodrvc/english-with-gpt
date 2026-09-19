@@ -136,3 +136,48 @@ describe('HttpProgressTracker.states', () => {
     await expect(tracker.states()).rejects.toThrow(/nivel desconocido/);
   });
 });
+
+describe('HttpProgressTracker.register', () => {
+  it('da de alta el tópico y los siete objetivos derivados de la taxonomía', async () => {
+    const { url, received, server } = await serve(201);
+    open = server;
+    await new HttpProgressTracker({ baseUrl: url, topicId: 'english-writing', logger: silentLogger }).register();
+
+    expect(received[0]!.url).toBe('/topics');
+    expect(received[0]!.body).toEqual({ topic_id: 'english-writing', name: 'English Writing' });
+    expect(received[1]!.url).toBe('/topics/english-writing/objectives');
+    const objectives = (received[1]!.body as { objectives: { objective_id: string }[] }).objectives;
+    expect(objectives).toHaveLength(7);
+    expect(objectives.map((o) => o.objective_id)).toContain('writing-grammar');
+  });
+
+  it('un tópico que ya existe no es un fallo: es el caso normal tras el primer arranque', async () => {
+    // Tratarlo como error dejaría una advertencia en cada arranque para
+    // siempre, y una advertencia que siempre está se deja de leer.
+    const received: Received[] = [];
+    const server = createServer((req, res) => {
+      let raw = '';
+      req.on('data', (chunk) => (raw += chunk));
+      req.on('end', () => {
+        received.push({ method: req.method ?? '', url: req.url ?? '', body: JSON.parse(raw || '{}') });
+        // El motor responde 409 al tópico repetido y 201 a los objetivos,
+        // que absorbe sin duplicar historial.
+        res.writeHead(req.url === '/topics' ? 409 : 201, { 'Content-Type': 'application/json' });
+        res.end('{}');
+      });
+    });
+    const url: string = await new Promise((resolve) => {
+      server.listen(0, '127.0.0.1', () => {
+        const address = server.address();
+        const port = typeof address === 'object' && address ? address.port : 0;
+        resolve(`http://127.0.0.1:${port}`);
+      });
+    });
+    open = server;
+
+    await expect(
+      new HttpProgressTracker({ baseUrl: url, topicId: 't', logger: silentLogger }).register(),
+    ).resolves.toBeUndefined();
+    expect(received).toHaveLength(2);
+  });
+});

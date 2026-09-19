@@ -39,7 +39,10 @@ function main(): void {
   // No bloquea el arranque: un motor caído no puede impedir que se practique,
   // y esto se reintenta en el arranque siguiente.
   void progress.register().catch((err: unknown) => {
-    logger.warn('progress.register_failed', {
+    // `error`, no `warn`: sin objetivos dados de alta, cada hecho se rechaza
+    // con 404 y el progreso queda muerto hasta el próximo arranque. Es más
+    // grave que el síntoma que produce.
+    logger.error('progress.register_failed', {
       error: err instanceof Error ? err.message : 'desconocido',
     });
   });
