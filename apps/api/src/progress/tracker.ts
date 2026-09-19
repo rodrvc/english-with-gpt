@@ -29,11 +29,20 @@ export interface ProgressAttempt {
  */
 export interface ProgressTracker {
   record(attempts: ProgressAttempt[]): Promise<void>;
+  /**
+   * Estado de cada objetivo. Lanza si no se pudo preguntar: devolver una lista
+   * vacía haría indistinguible "todavía no hay evidencia" de "no hubo
+   * respuesta", y son cosas distintas que la UI muestra distinto.
+   */
+  states(): Promise<ObjectiveProgress[]>;
 }
 
 /** Implementación inerte: el motor no está configurado. */
 export const noopTracker: ProgressTracker = {
   async record(): Promise<void> {},
+  async states(): Promise<ObjectiveProgress[]> {
+    return [];
+  },
 };
 
 /**
@@ -54,3 +63,24 @@ export function objectiveFor(category: CorrectionCategory): string {
  * nivel que nunca se mueve.
  */
 export const TRACKED_CATEGORIES: readonly CorrectionCategory[] = CorrectionCategorySchema.options;
+
+/** Nivel de dominio de un objetivo, tal como lo nombra el motor. */
+export type MasteryLevel = 'unassessed' | 'weak' | 'learning' | 'competent' | 'mastered';
+
+/** Lo que el motor sabe de un objetivo, proyectado desde su historial. */
+export interface ObjectiveProgress {
+  objectiveId: string;
+  level: MasteryLevel;
+  score: number;
+  totalAttempts: number;
+  correctAttempts: number;
+  isDue: boolean;
+  nextReviewAt: string | null;
+}
+
+/** Inverso de `objectiveFor`. Ignora objetivos que esta app no conoce. */
+export function categoryForObjective(objectiveId: string): CorrectionCategory | null {
+  const suffix = objectiveId.startsWith('writing-') ? objectiveId.slice('writing-'.length) : null;
+  const match = TRACKED_CATEGORIES.find((category) => category === suffix);
+  return match ?? null;
+}

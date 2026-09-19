@@ -1,5 +1,30 @@
 import type { Logger } from '../logger.js';
-import type { ProgressAttempt, ProgressTracker } from './tracker.js';
+import type {
+  MasteryLevel,
+  ObjectiveProgress,
+  ProgressAttempt,
+  ProgressTracker,
+} from './tracker.js';
+
+/** Forma que devuelve el motor. Solo se lee lo que la vista usa. */
+interface EngineState {
+  objective_id: string;
+  level: string;
+  score: number;
+  total_attempts: number;
+  correct_attempts: number;
+  is_due: boolean;
+  next_review_at: string | null;
+}
+
+const LEVELS = new Set<MasteryLevel>(['unassessed', 'weak', 'learning', 'competent', 'mastered']);
+
+function toLevel(value: string): MasteryLevel {
+  const level = value.toLowerCase();
+  // Un nivel desconocido es el motor hablando de algo que esta versión no
+  // entiende: tratarlo como "sin evaluar" es menos malo que inventar uno.
+  return LEVELS.has(level as MasteryLevel) ? (level as MasteryLevel) : 'unassessed';
+}
 
 export interface HttpProgressTrackerOptions {
   /** Raíz de la API del motor, p. ej. `http://127.0.0.1:8000`. */
@@ -40,6 +65,27 @@ export class HttpProgressTracker implements ProgressTracker {
     for (const [index, attempt] of attempts.entries()) {
       await this.post(attempt, deadline, `${index + 1}/${attempts.length}`);
     }
+  }
+
+  /**
+   * A diferencia de `record`, una lectura fallida sí se propaga entera: la
+   * vista tiene que poder decir "no pude preguntar" en vez de mostrar un
+   * historial vacío que parece un estudiante sin progreso.
+   */
+  async states(): Promise<ObjectiveProgress[]> {
+    const url = `${this.options.baseUrl}/topics/${encodeURIComponent(this.options.topicId)}/objectives/states`;
+    const res = await fetch(url, { signal: AbortSignal.timeout(this.timeoutMs) });
+    if (!res.ok) throw new Error(`El motor respondió ${res.status}`);
+    const body = (await res.json()) as EngineState[];
+    return body.map((state) => ({
+      objectiveId: state.objective_id,
+      level: toLevel(state.level),
+      score: state.score,
+      totalAttempts: state.total_attempts,
+      correctAttempts: state.correct_attempts,
+      isDue: state.is_due,
+      nextReviewAt: state.next_review_at,
+    }));
   }
 
   /** Lanza si el motor no es alcanzable; un rechazo suyo no es excepción. */

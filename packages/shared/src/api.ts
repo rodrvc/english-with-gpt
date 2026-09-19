@@ -47,6 +47,40 @@ export const HealthResponseSchema = z.object({
 });
 export type HealthResponse = z.infer<typeof HealthResponseSchema>;
 
+// ---------- Progreso ----------
+
+export const MasteryLevelSchema = z.enum([
+  'unassessed',
+  'weak',
+  'learning',
+  'competent',
+  'mastered',
+]);
+export type MasteryLevel = z.infer<typeof MasteryLevelSchema>;
+
+export const ObjectiveProgressSchema = z.object({
+  /** Categoría de corrección que el motor sigue como objetivo. */
+  category: CorrectionCategorySchema,
+  level: MasteryLevelSchema,
+  score: z.number(),
+  totalAttempts: z.number().int().min(0),
+  correctAttempts: z.number().int().min(0),
+  /** Toca repasarlo. */
+  isDue: z.boolean(),
+});
+export type ObjectiveProgress = z.infer<typeof ObjectiveProgressSchema>;
+
+export const ProgressResponseSchema = z.object({
+  /**
+   * `false` cuando no hay motor configurado o no respondió. La vista lo
+   * distingue de un historial vacío: "no hay evidencia todavía" y "no pude
+   * preguntar" no son lo mismo.
+   */
+  available: z.boolean(),
+  objectives: z.array(ObjectiveProgressSchema),
+});
+export type ProgressResponse = z.infer<typeof ProgressResponseSchema>;
+
 // ---------- Challenges ----------
 
 export const ListChallengesQuerySchema = z.object({

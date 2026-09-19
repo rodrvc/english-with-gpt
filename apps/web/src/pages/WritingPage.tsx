@@ -1,9 +1,16 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { PASS_THRESHOLD, type Attempt, type ChallengeExample, type Session } from '@english-practice/shared';
+import {
+  PASS_THRESHOLD,
+  type Attempt,
+  type ChallengeExample,
+  type ProgressResponse,
+  type Session,
+} from '@english-practice/shared';
 import { api } from '../api/client';
 import { ErrorBanner, Loading } from '../components/Feedback';
 import { TopBar } from '../components/TopBar';
 import { BreakdownPanel } from '../writing/BreakdownPanel';
+import { ProgressPanel } from '../writing/ProgressPanel';
 import { ChallengeCard } from '../writing/ChallengeCard';
 import { ChallengePicker } from '../writing/ChallengePicker';
 import { CorrectionsPanel } from '../writing/CorrectionsPanel';
@@ -47,6 +54,7 @@ export function WritingPage() {
   const [text, setText] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<unknown>(null);
+  const [progress, setProgress] = useState<ProgressResponse>({ available: false, objectives: [] });
   const [showMarks, setShowMarks] = useState(true);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [tab, setTab] = useState<EditorTab>('write');
@@ -102,6 +110,22 @@ export function WritingPage() {
     }
   }, []);
 
+  /**
+   * El progreso no bloquea nada: si falla, la vista lo dice y la práctica
+   * sigue. Por eso no toca `setError`, que es para errores de la práctica.
+   */
+  const loadProgress = useCallback(async () => {
+    try {
+      setProgress(await api.progress());
+    } catch {
+      setProgress({ available: false, objectives: [] });
+    }
+  }, []);
+
+  useEffect(() => {
+    void loadProgress();
+  }, [loadProgress]);
+
   const submit = useCallback(async () => {
     if (!session || submitting) return;
     setSubmitting(true);
@@ -111,12 +135,14 @@ export function WritingPage() {
       setSession(r.session);
       setActiveId(null);
       // El texto NO se toca: sigue siendo exactamente lo que escribió el estudiante.
+      // El intento ya se reportó al motor, así que el nivel pudo moverse.
+      void loadProgress();
     } catch (e) {
       setError(e);
     } finally {
       setSubmitting(false);
     }
-  }, [session, submitting, text]);
+  }, [session, submitting, text, loadProgress]);
 
   const reset = useCallback(() => {
     setSession(null);
@@ -339,6 +365,7 @@ export function WritingPage() {
             />
             <TipsPanel tips={evaluation?.tips ?? []} summary={evaluation?.summary ?? null} />
             <BreakdownPanel breakdown={evaluation?.breakdown ?? null} reasons={evaluation?.breakdownReasons ?? null} />
+            <ProgressPanel objectives={progress.objectives} available={progress.available} />
           </div>
         </div>
       </main>

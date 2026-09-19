@@ -11,16 +11,22 @@ import { Evaluator } from './evaluation/evaluator.js';
 import { ProviderUnavailableError, type EvaluationProvider } from './evaluation/provider.js';
 import { silentLogger } from './logger.js';
 import { loadConfig } from './config.js';
-import type { ProgressAttempt, ProgressTracker } from './progress/tracker.js';
+import type { ObjectiveProgress, ProgressAttempt, ProgressTracker } from './progress/tracker.js';
 
 /** Motor de seguimiento de mentira: guarda lo reportado, o falla a voluntad. */
 class RecordingTracker implements ProgressTracker {
   readonly recorded: ProgressAttempt[] = [];
   failing = false;
+  objectives: ObjectiveProgress[] = [];
 
   async record(attempts: ProgressAttempt[]): Promise<void> {
     if (this.failing) throw new Error('motor caído');
     this.recorded.push(...attempts);
+  }
+
+  async states(): Promise<ObjectiveProgress[]> {
+    if (this.failing) throw new Error('motor caído');
+    return this.objectives;
   }
 }
 
@@ -342,6 +348,47 @@ describe('API HTTP', () => {
 
     const stored = await request(app).get(`/api/v1/sessions/${session.id}`);
     expect(stored.body.session.attempts).toHaveLength(1);
+  });
+
+  it('GET /progress traduce los objetivos del motor a categorías', async () => {
+    tracker.objectives = [
+      {
+        objectiveId: 'writing-grammar',
+        level: 'learning',
+        score: 62,
+        totalAttempts: 4,
+        correctAttempts: 2,
+        isDue: true,
+        nextReviewAt: '2026-09-20T10:00:00.000Z',
+      },
+      // Un objetivo de otra materia en el mismo tópico no es asunto de writing.
+      {
+        objectiveId: 'D1.1.a',
+        level: 'weak',
+        score: 10,
+        totalAttempts: 2,
+        correctAttempts: 0,
+        isDue: false,
+        nextReviewAt: null,
+      },
+    ];
+    const res = await request(app).get('/api/v1/progress');
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({
+      available: true,
+      objectives: [
+        { category: 'grammar', level: 'learning', score: 62, totalAttempts: 4, correctAttempts: 2, isDue: true },
+      ],
+    });
+  });
+
+  it('GET /progress distingue un motor mudo de un historial vacío', async () => {
+    // available:false es la diferencia entre "no hay evidencia todavía" y
+    // "no pude preguntar", que la vista muestra distinto.
+    tracker.failing = true;
+    const res = await request(app).get('/api/v1/progress');
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({ available: false, objectives: [] });
   });
 
   it('GET /export/attempts devuelve el formato estable con filtro por fechas', async () => {
