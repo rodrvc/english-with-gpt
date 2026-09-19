@@ -11,8 +11,9 @@ interface Props {
 }
 
 /**
- * Lista de correcciones propuestas. Son información adyacente: el estudiante
- * reescribe por sí mismo. No existe ningún botón de "aplicar".
+ * Lo que el texto necesita arreglar y, debajo, lo que resolvió bien. Ambas son
+ * información adyacente: el estudiante reescribe por sí mismo. No existe
+ * ningún botón de "aplicar".
  */
 export function CorrectionsPanel({ corrections, exercised, liveIds, activeId, onActivate, hasEvaluation }: Props) {
   const errors = corrections.filter((c) => c.severity === 'error').length;
@@ -31,14 +32,14 @@ export function CorrectionsPanel({ corrections, exercised, liveIds, activeId, on
       {!hasEvaluation && <div className="empty">Envía tu texto a revisión para recibir correcciones ancladas a tu redacción.</div>}
       {hasEvaluation && corrections.length === 0 && <div className="empty">Sin correcciones. ¡Buen trabajo!</div>}
       {hasEvaluation && exercised.length > 0 && (
-        <div className="exercised">
-          <div className="exercised-head">Resolviste bien</div>
+        <section className="exercised" aria-label="Lo que resolviste bien">
+          <h3 className="exercised-head">Resolviste bien</h3>
           <ul className="exercised-list">
             {exercised.map((category) => (
               <li key={category}>{CATEGORY_LABELS[category]}</li>
             ))}
           </ul>
-        </div>
+        </section>
       )}
       <div className="fix-list">
       {corrections.map((c) => {

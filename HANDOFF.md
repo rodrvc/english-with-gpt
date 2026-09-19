@@ -77,6 +77,22 @@ Es una decisión de producto, no una limitación. El estudiante ve el tramo marc
 - Umbral de 85 es una suposición; ajústalo si al probar con textos reales resulta mal calibrado.
 - El temporizador del desafío se asume informativo, no fuerza el envío.
 
+## Una trampa al agregar campos a `Evaluation`
+
+La evaluación se guarda como JSON opaco en `attempts.evaluation_json` y se lee
+**validándola** con `EvaluationSchema` (`sessionRepository.ts`). Un campo nuevo
+sin `.default(...)` vuelve ilegible todo el historial anterior: `GET
+/sessions/:id` revienta, la sesión queda inservible —ni siquiera acepta un
+intento nuevo, porque la ruta la busca primero— y `/export/attempts` muere
+entero si hay una sola fila vieja en el rango.
+
+No hay versionado de esa columna. Mientras no lo haya, **todo campo nuevo de
+`EvaluationSchema` lleva `.default(...)`**, con un valor que sea la lectura
+verdadera de una fila antigua y no un relleno.
+
+Lo mismo no aplica a `ProviderEvaluationOutputSchema`: ahí el contrato es con
+el modelo, es vivo, y una omisión debe fallar fuerte.
+
 ## Convenciones del repo
 
 - Commits atribuidos solo a Rodrigo Valladares <rodrigovalladares.dev@gmail.com>. **No** agregues `Co-Authored-By: Claude` ni menciones a Claude/Anthropic en los mensajes de commit.
