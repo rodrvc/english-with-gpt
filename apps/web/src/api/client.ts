@@ -4,6 +4,7 @@ import {
   GetChallengeResponseSchema,
   HealthResponseSchema,
   ListChallengesResponseSchema,
+  ProgressResponseSchema,
   SessionResponseSchema,
   SubmitAttemptResponseSchema,
   API_PREFIX,
@@ -59,6 +60,7 @@ function query(params: Record<string, string | undefined>): string {
 
 export const api = {
   health: () => call(HealthResponseSchema, '/health'),
+  progress: () => call(ProgressResponseSchema, '/progress'),
   listChallenges: (filters: ListChallengesQuery = {}) =>
     call(ListChallengesResponseSchema, `/challenges${query(filters)}`),
   getChallenge: (id: string) => call(GetChallengeResponseSchema, `/challenges/${encodeURIComponent(id)}`),

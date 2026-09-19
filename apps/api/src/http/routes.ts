@@ -12,6 +12,7 @@ import {
   type GetChallengeResponse,
   type HealthResponse,
   type ListChallengesResponse,
+  type ProgressResponse,
   type SessionResponse,
   type SubmitAttemptResponse,
 } from '@english-practice/shared';
@@ -20,7 +21,7 @@ import type { SessionRepository } from '../db/sessionRepository.js';
 import { AppError, evaluationUnavailable, notFound, sessionClosed, validation } from '../errors.js';
 import type { Logger } from '../logger.js';
 import { attemptsFrom } from '../progress/attempts.js';
-import type { ProgressTracker } from '../progress/tracker.js';
+import { categoryForObjective, type ProgressTracker } from '../progress/tracker.js';
 import type { Evaluator } from '../evaluation/evaluator.js';
 import type { ExampleGenerator } from '../evaluation/example.js';
 import { parseOrThrow } from './validate.js';
@@ -166,6 +167,46 @@ export function createRouter(deps: RouteDeps): Router {
         error: err instanceof Error ? err.message : 'desconocido',
       });
     });
+  });
+
+  router.get('/progress', async (_req, res) => {
+    if (!deps.progress.configured) {
+      const body: ProgressResponse = { configured: false, available: false, objectives: [] };
+      res.json(body);
+      return;
+    }
+
+    // El `try` cubre solo la consulta al motor. Un fallo del mapeo de abajo es
+    // un bug de esta app, y disfrazarlo de "el motor no responde" lo deja
+    // escondido en un warn que nadie mira.
+    let states;
+    try {
+      states = await deps.progress.states();
+    } catch (err) {
+      deps.logger.warn('progress.read_failed', {
+        error: err instanceof Error ? err.message : 'desconocido',
+      });
+      const body: ProgressResponse = { configured: true, available: false, objectives: [] };
+      res.json(body);
+      return;
+    }
+
+    const objectives = states.flatMap((state) => {
+      const category = categoryForObjective(state.objectiveId);
+      if (!category) return [];
+      return [
+        {
+          category,
+          level: state.level,
+          score: state.score,
+          totalAttempts: state.totalAttempts,
+          correctAttempts: state.correctAttempts,
+          isDue: state.isDue,
+        },
+      ];
+    });
+    const body: ProgressResponse = { configured: true, available: true, objectives };
+    res.json(body);
   });
 
   router.get('/export/attempts', (req, res) => {

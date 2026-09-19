@@ -14,7 +14,7 @@ interface Received {
  * Congela la forma exacta que espera el motor. Si su contrato cambia, esto
  * falla aquí y no en silencio contra una API real.
  */
-function serve(status: number): Promise<{ url: string; received: Received[]; server: Server }> {
+function serve(status: number, payload = '{}'): Promise<{ url: string; received: Received[]; server: Server }> {
   const received: Received[] = [];
   const server = createServer((req, res) => {
     let raw = '';
@@ -22,7 +22,7 @@ function serve(status: number): Promise<{ url: string; received: Received[]; ser
     req.on('end', () => {
       received.push({ method: req.method ?? '', url: req.url ?? '', body: JSON.parse(raw || '{}') });
       res.writeHead(status, { 'Content-Type': 'application/json' });
-      res.end('{}');
+      res.end(payload);
     });
   });
   return new Promise((resolve) => {
@@ -88,5 +88,96 @@ describe('HttpProgressTracker', () => {
       timeoutMs: 500,
     });
     await expect(tracker.record([attempt, { ...attempt, attemptId: 'a1:spelling:miss' }])).rejects.toThrow();
+  });
+});
+
+describe('HttpProgressTracker.states', () => {
+  /** Tal como responde el motor: nivel en mayúsculas y puntaje de 0 a 1. */
+  const engineState = {
+    objective_id: 'writing-grammar',
+    as_of: '2026-09-19T10:00:00Z',
+    level: 'WEAK',
+    score: 0.599997,
+    total_attempts: 4,
+    correct_attempts: 2,
+    is_due: true,
+    next_review_at: '2026-09-21T10:00:00Z',
+  };
+
+  it('traduce el nivel en mayúsculas y lleva el puntaje a la escala de la app', async () => {
+    const { url, server } = await serve(200, JSON.stringify([engineState]));
+    open = server;
+    const states = await new HttpProgressTracker({
+      baseUrl: url,
+      topicId: 'english-writing',
+      logger: silentLogger,
+    }).states();
+
+    expect(states).toEqual([
+      {
+        objectiveId: 'writing-grammar',
+        level: 'weak',
+        score: 60,
+        totalAttempts: 4,
+        correctAttempts: 2,
+        isDue: true,
+        nextReviewAt: '2026-09-21T10:00:00Z',
+      },
+    ]);
+  });
+
+  it('falla ante un nivel que esta versión no conoce, en vez de inventar uno', async () => {
+    // `unassessed` significa "no hay evidencia" y la vista se lo dice al
+    // estudiante: degradar a eso convertiría un hueco del parseo en una
+    // afirmación falsa sobre su progreso.
+    const { url, server } = await serve(200, JSON.stringify([{ ...engineState, level: 'EXPERT' }]));
+    open = server;
+    const tracker = new HttpProgressTracker({ baseUrl: url, topicId: 't', logger: silentLogger });
+    await expect(tracker.states()).rejects.toThrow(/nivel desconocido/);
+  });
+});
+
+describe('HttpProgressTracker.register', () => {
+  it('da de alta el tópico y los siete objetivos derivados de la taxonomía', async () => {
+    const { url, received, server } = await serve(201);
+    open = server;
+    await new HttpProgressTracker({ baseUrl: url, topicId: 'english-writing', logger: silentLogger }).register();
+
+    expect(received[0]!.url).toBe('/topics');
+    expect(received[0]!.body).toEqual({ topic_id: 'english-writing', name: 'English Writing' });
+    expect(received[1]!.url).toBe('/topics/english-writing/objectives');
+    const objectives = (received[1]!.body as { objectives: { objective_id: string }[] }).objectives;
+    expect(objectives).toHaveLength(7);
+    expect(objectives.map((o) => o.objective_id)).toContain('writing-grammar');
+  });
+
+  it('un tópico que ya existe no es un fallo: es el caso normal tras el primer arranque', async () => {
+    // Tratarlo como error dejaría una advertencia en cada arranque para
+    // siempre, y una advertencia que siempre está se deja de leer.
+    const received: Received[] = [];
+    const server = createServer((req, res) => {
+      let raw = '';
+      req.on('data', (chunk) => (raw += chunk));
+      req.on('end', () => {
+        received.push({ method: req.method ?? '', url: req.url ?? '', body: JSON.parse(raw || '{}') });
+        // El motor responde 409 al tópico repetido y 201 a los objetivos,
+        // que absorbe sin duplicar historial.
+        res.writeHead(req.url === '/topics' ? 409 : 201, { 'Content-Type': 'application/json' });
+        res.end('{}');
+      });
+    });
+    const url: string = await new Promise((resolve) => {
+      server.listen(0, '127.0.0.1', () => {
+        const address = server.address();
+        const port = typeof address === 'object' && address ? address.port : 0;
+        resolve(`http://127.0.0.1:${port}`);
+      });
+    });
+    open = server;
+
+    await expect(
+      new HttpProgressTracker({ baseUrl: url, topicId: 't', logger: silentLogger }).register(),
+    ).resolves.toBeUndefined();
+    expect(received).toHaveLength(2);
   });
 });

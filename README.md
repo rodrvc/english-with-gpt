@@ -67,6 +67,7 @@ Base: `http://localhost:3001/api/v1`. Todas las respuestas son JSON. El contrato
 | `POST` | `/sessions` | Inicia una sesión. Cuerpo: `{ challengeId }` o filtros `{ level?, context? }` para elegir al azar. |
 | `GET` | `/sessions/:id` | Sesión con sus intentos en orden, cada uno con texto, evaluación y delta. |
 | `POST` | `/sessions/:id/attempts` | Cuerpo `{ text }`. Evalúa, persiste el intento numerado, calcula el delta y resuelve la aprobación. Sujeto a límite de tasa. |
+| `GET` | `/progress` | Nivel por categoría según el motor de seguimiento. `available: false` cuando no hay motor configurado o no respondió: la vista distingue eso de un historial vacío. Nunca falla. |
 | `GET` | `/export/attempts?from=&to=` | Exportación estable (`english-practice.attempts.v1`) para el motor de métricas. |
 
 Contextos: `work_email`, `friend_letter`, `instructions`, `complaint`, `other`. Niveles: `A1`…`C2`.

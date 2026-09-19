@@ -1,5 +1,36 @@
 import type { Logger } from '../logger.js';
-import type { ProgressAttempt, ProgressTracker } from './tracker.js';
+import { CATEGORY_LABELS } from '@english-practice/shared';
+import { objectiveFor, TRACKED_CATEGORIES } from './tracker.js';
+import type {
+  MasteryLevel,
+  ObjectiveProgress,
+  ProgressAttempt,
+  ProgressTracker,
+} from './tracker.js';
+
+/** Forma que devuelve el motor. Solo se lee lo que la vista usa. */
+interface EngineState {
+  objective_id: string;
+  level: string;
+  score: number;
+  total_attempts: number;
+  correct_attempts: number;
+  is_due: boolean;
+  next_review_at: string | null;
+}
+
+const LEVELS = new Set<MasteryLevel>(['unassessed', 'weak', 'learning', 'competent', 'mastered']);
+
+/** El motor los serializa en mayúsculas (`WEAK`), su enum interno. */
+function toLevel(value: string): MasteryLevel {
+  const level = value.toLowerCase();
+  if (LEVELS.has(level as MasteryLevel)) return level as MasteryLevel;
+  // No se degrada a `unassessed`: esa palabra significa "no hay evidencia" y
+  // la vista la usa para decírselo al estudiante. Un nivel que esta versión
+  // no conoce no es evidencia ausente, es una pregunta sin responder, y eso
+  // se trata como lectura fallida.
+  throw new Error(`El motor devolvió un nivel desconocido: ${value}`);
+}
 
 export interface HttpProgressTrackerOptions {
   /** Raíz de la API del motor, p. ej. `http://127.0.0.1:8000`. */
@@ -19,6 +50,7 @@ export interface HttpProgressTrackerOptions {
  * historial es valioso, pero no al precio de romper la práctica.
  */
 export class HttpProgressTracker implements ProgressTracker {
+  readonly configured = true;
   private readonly timeoutMs: number;
 
   constructor(private readonly options: HttpProgressTrackerOptions) {
@@ -40,6 +72,67 @@ export class HttpProgressTracker implements ProgressTracker {
     for (const [index, attempt] of attempts.entries()) {
       await this.post(attempt, deadline, `${index + 1}/${attempts.length}`);
     }
+  }
+
+  /**
+   * Crea el tópico si falta y da de alta los objetivos. Ambas operaciones son
+   * idempotentes, así que correrlo en cada arranque es seguro.
+   */
+  async register(): Promise<void> {
+    const base = `${this.options.baseUrl}/topics`;
+    const topic = encodeURIComponent(this.options.topicId);
+    // 409 es que el tópico ya existe, que es el caso normal tras el primer
+    // arranque: no es un fallo.
+    const created = await fetch(base, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ topic_id: this.options.topicId, name: 'English Writing' }),
+      signal: AbortSignal.timeout(this.timeoutMs),
+    });
+    if (!created.ok && created.status !== 409) {
+      throw new Error(`El motor rechazó el tópico con ${created.status}`);
+    }
+
+    const res = await fetch(`${base}/${topic}/objectives`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        objectives: TRACKED_CATEGORIES.map((category) => ({
+          objective_id: objectiveFor(category),
+          title: CATEGORY_LABELS[category],
+        })),
+      }),
+      signal: AbortSignal.timeout(this.timeoutMs),
+    });
+    if (!res.ok) throw new Error(`El motor rechazó los objetivos con ${res.status}`);
+  }
+
+  /**
+   * A diferencia de `record`, una lectura fallida sí se propaga entera: la
+   * vista tiene que poder decir "no pude preguntar" en vez de mostrar un
+   * historial vacío que parece un estudiante sin progreso.
+   */
+  async states(): Promise<ObjectiveProgress[]> {
+    const url = `${this.options.baseUrl}/topics/${encodeURIComponent(this.options.topicId)}/objectives/states`;
+    const res = await fetch(url, { signal: AbortSignal.timeout(this.timeoutMs) });
+    if (!res.ok) throw new Error(`El motor respondió ${res.status}`);
+    const body: unknown = await res.json();
+    // Una deriva del contrato llega típicamente como un objeto donde se
+    // esperaba una lista: fallar acá lo dice, en vez de propagar `undefined`
+    // campo por campo hasta que algo más abajo se rompa.
+    if (!Array.isArray(body)) throw new Error('El motor devolvió algo que no es una lista de estados');
+    const states = body as EngineState[];
+    return states.map((state) => ({
+      objectiveId: state.objective_id,
+      level: toLevel(state.level),
+      // El motor lo entrega de 0 a 1 y la app muestra puntajes de 0 a 100 en
+      // todas partes. Se convierte acá, que es donde se conocen sus unidades.
+      score: Math.round(state.score * 100),
+      totalAttempts: state.total_attempts,
+      correctAttempts: state.correct_attempts,
+      isDue: state.is_due,
+      nextReviewAt: state.next_review_at,
+    }));
   }
 
   /** Lanza si el motor no es alcanzable; un rechazo suyo no es excepción. */
