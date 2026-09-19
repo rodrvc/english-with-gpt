@@ -23,6 +23,9 @@ export interface ProgressAttempt {
  * decisión tomada dos veces y hace que una futura lectura (qué toca repasar)
  * herede el hábito de devolver vacío en silencio, que ahí sí sería un error:
  * "nada pendiente" y "no pude preguntar" no son lo mismo.
+ *
+ * Por lo mismo, quien llame a `record` debe atrapar: un rechazo sin manejar
+ * es fatal para el proceso, y este no es un fallo que valga un proceso.
  */
 export interface ProgressTracker {
   record(attempts: ProgressAttempt[]): Promise<void>;

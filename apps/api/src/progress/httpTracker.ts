@@ -37,13 +37,13 @@ export class HttpProgressTracker implements ProgressTracker {
    */
   async record(attempts: ProgressAttempt[]): Promise<void> {
     const deadline = AbortSignal.timeout(this.timeoutMs);
-    for (const attempt of attempts) {
-      await this.post(attempt, deadline);
+    for (const [index, attempt] of attempts.entries()) {
+      await this.post(attempt, deadline, `${index + 1}/${attempts.length}`);
     }
   }
 
   /** Lanza si el motor no es alcanzable; un rechazo suyo no es excepción. */
-  private async post(attempt: ProgressAttempt, signal: AbortSignal): Promise<void> {
+  private async post(attempt: ProgressAttempt, signal: AbortSignal, position: string): Promise<void> {
     const url =
       `${this.options.baseUrl}/topics/${encodeURIComponent(this.options.topicId)}` +
       `/objectives/${encodeURIComponent(attempt.objectiveId)}/attempts`;
@@ -78,8 +78,12 @@ export class HttpProgressTracker implements ProgressTracker {
         objectiveId: attempt.objectiveId,
       });
     } catch (err) {
-      this.options.logger.warn('progress.unreachable', {
+      // Agotar el presupuesto y no poder conectarse se ven igual desde acá,
+      // pero piden respuestas distintas: el primero puede ser un motor sano y
+      // lento. La posición dice además cuánto del reporte alcanzó a llegar.
+      this.options.logger.warn(signal.aborted ? 'progress.budget_spent' : 'progress.unreachable', {
         objectiveId: attempt.objectiveId,
+        position,
         error: err instanceof Error ? err.message : 'desconocido',
       });
       throw err;
