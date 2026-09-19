@@ -2,19 +2,22 @@ import type { Attempt, Evaluation } from '@english-practice/shared';
 import { objectiveFor, TRACKED_CATEGORIES, type ProgressAttempt } from './tracker.js';
 
 /**
- * Traduce una evaluación a hechos para el motor: una categoría con al menos
- * una corrección de severidad `error` es un fallo en ese objetivo.
+ * Traduce una evaluación a hechos para el motor.
  *
- * Solo se reportan fallos. La ausencia de corrección no es evidencia de
- * acierto: un texto que nunca usó artículos no demuestra dominarlos. Reportar
- * el acierto exige que el evaluador declare qué ejercitó el texto, y eso llega
- * en otro cambio.
+ * Un fallo es una categoría con al menos una corrección de severidad `error`.
+ * Un acierto es una categoría que el evaluador declaró ejercitada y el
+ * servidor pudo atar al texto; la ausencia de corrección no cuenta, porque un
+ * texto que nunca usó artículos no demuestra dominarlos.
+ *
+ * Ambos hechos pueden coexistir sobre el mismo intento y la misma categoría:
+ * un texto puede resolver bien una frase y equivocar otra. Por eso el
+ * identificador lleva el signo.
  */
 export function attemptsFrom(attempt: Attempt, evaluation: Evaluation): ProgressAttempt[] {
   const failed = new Set(
     evaluation.corrections.filter((c) => c.severity === 'error').map((c) => c.category),
   );
-  return TRACKED_CATEGORIES.filter((category) => failed.has(category)).map((category) => {
+  const misses = TRACKED_CATEGORIES.filter((category) => failed.has(category)).map((category) => {
     const count = evaluation.corrections.filter(
       (c) => c.category === category && c.severity === 'error',
     ).length;
@@ -34,4 +37,14 @@ export function attemptsFrom(attempt: Attempt, evaluation: Evaluation): Progress
       note: `${count} ${count === 1 ? 'error' : 'errores'}`,
     };
   });
+
+  const hits = evaluation.exercised.map((category) => ({
+    attemptId: `${attempt.id}:${category}:hit`,
+    objectiveId: objectiveFor(category),
+    correct: true,
+    at: attempt.createdAt,
+    note: 'ejercitado sin errores',
+  }));
+
+  return [...misses, ...hits];
 }
