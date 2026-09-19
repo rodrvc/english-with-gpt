@@ -11,6 +11,27 @@ import { Evaluator } from './evaluation/evaluator.js';
 import { ProviderUnavailableError, type EvaluationProvider } from './evaluation/provider.js';
 import { silentLogger } from './logger.js';
 import { loadConfig } from './config.js';
+import type { ProgressAttempt, ProgressTracker } from './progress/tracker.js';
+
+/** Motor de seguimiento de mentira: guarda lo reportado, o falla a voluntad. */
+class RecordingTracker implements ProgressTracker {
+  readonly recorded: ProgressAttempt[] = [];
+  failing = false;
+
+  async record(attempts: ProgressAttempt[]): Promise<void> {
+    if (this.failing) throw new Error('motor caído');
+    this.recorded.push(...attempts);
+  }
+}
+
+/**
+ * El reporte ocurre después de responder, así que la aserción tiene que
+ * esperar a que la microtarea corra. Sin esto el test pasa por accidente,
+ * porque este doble resuelve en el mismo tick.
+ */
+async function flush(): Promise<void> {
+  await new Promise((resolve) => setImmediate(resolve));
+}
 
 const ORIGIN = 'http://localhost:5173';
 
@@ -54,6 +75,7 @@ function evaluationFor(text: string, opts: { score?: number; withError?: boolean
 describe('API HTTP', () => {
   let app: Express;
   let provider: ScriptedProvider;
+  let tracker: RecordingTracker;
 
   beforeEach(() => {
     const db = openDatabase(':memory:');
@@ -61,10 +83,12 @@ describe('API HTTP', () => {
     challenges.upsertMany(CHALLENGE_SEED);
     const sessions = new SessionRepository(db, challenges);
     provider = new ScriptedProvider();
+    tracker = new RecordingTracker();
     app = createApp({
       challenges,
       sessions,
       evaluator: new Evaluator(provider, silentLogger, { maxAttempts: 2 }),
+      progress: tracker,
       maxTextLength: 200,
       evaluationAvailable: true,
       rateLimit: { max: 3, windowSeconds: 60 },
@@ -281,6 +305,42 @@ describe('API HTTP', () => {
     expect(res.status).toBe(502);
     expect(JSON.stringify(res.body)).not.toContain('test-key-not-real');
     expect(JSON.stringify(res.body)).not.toMatch(/sk-/);
+  });
+
+  it('reporta al motor un fallo por cada categoría con error, tras responder', async () => {
+    const session = await startSession();
+    const text = 'I am writting to you to request some days off.';
+    provider.queue.push(evaluationFor(text, { score: 70, withError: true }));
+    const res = await request(app).post(`/api/v1/sessions/${session.id}/attempts`).send({ text });
+    expect(res.status).toBe(201);
+    await flush();
+
+    expect(tracker.recorded).toHaveLength(1);
+    expect(tracker.recorded[0]!.objectiveId).toBe('writing-spelling');
+    expect(tracker.recorded[0]!.correct).toBe(false);
+    expect(tracker.recorded[0]!.at).toBe(res.body.attempt.createdAt);
+  });
+
+  it('un texto sin errores no reporta nada: la ausencia no es evidencia de acierto', async () => {
+    const session = await startSession();
+    const text = 'I am writing to you to request some days off.';
+    provider.queue.push(evaluationFor(text, { score: 90 }));
+    await request(app).post(`/api/v1/sessions/${session.id}/attempts`).send({ text });
+    await flush();
+    expect(tracker.recorded).toEqual([]);
+  });
+
+  it('el motor caído no rompe la práctica: el intento se evalúa y se persiste igual', async () => {
+    tracker.failing = true;
+    const session = await startSession();
+    const text = 'I am writting to you to request some days off.';
+    provider.queue.push(evaluationFor(text, { score: 70, withError: true }));
+    const res = await request(app).post(`/api/v1/sessions/${session.id}/attempts`).send({ text });
+    expect(res.status).toBe(201);
+    expect(res.body.attempt.evaluation.corrections).toHaveLength(1);
+
+    const stored = await request(app).get(`/api/v1/sessions/${session.id}`);
+    expect(stored.body.session.attempts).toHaveLength(1);
   });
 
   it('GET /export/attempts devuelve el formato estable con filtro por fechas', async () => {

@@ -7,6 +7,9 @@ export interface Config {
   maxTextLength: number;
   rateLimitMax: number;
   rateLimitWindowSeconds: number;
+  /** Raíz del motor de seguimiento. Vacío: no se reporta el progreso. */
+  progressUrl: string;
+  progressTopic: string;
 }
 
 export class ConfigError extends Error {}
@@ -39,5 +42,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     maxTextLength: intOr(env.MAX_TEXT_LENGTH, 4000),
     rateLimitMax: intOr(env.RATE_LIMIT_MAX, 10),
     rateLimitWindowSeconds: intOr(env.RATE_LIMIT_WINDOW_SECONDS, 60),
+    progressUrl: env.PROGRESS_URL?.trim().replace(/\/$/, '') ?? '',
+    progressTopic: env.PROGRESS_TOPIC?.trim() || 'english-writing',
   };
 }

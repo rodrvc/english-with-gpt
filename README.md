@@ -33,6 +33,8 @@ Copia `.env.example` a `.env` en la raíz y completa la credencial:
 | `DATABASE_PATH` | Ruta del archivo SQLite (relativa a `apps/api`); `:memory:` para efímera | `./data/practice.db` |
 | `MAX_TEXT_LENGTH` | Longitud máxima de una redacción (unidades UTF-16) | `4000` |
 | `RATE_LIMIT_MAX` / `RATE_LIMIT_WINDOW_SECONDS` | Límite de evaluaciones por ventana | `10` / `60` |
+| `PROGRESS_URL` | Raíz del motor de seguimiento (learning-tracker). Vacío: no se reporta el progreso y la práctica funciona igual. | — |
+| `PROGRESS_TOPIC` | Tópico del motor donde vive el historial de escritura | `english-writing` |
 
 El frontend acepta opcionalmente `VITE_API_URL` (por defecto `http://localhost:3001`).
 

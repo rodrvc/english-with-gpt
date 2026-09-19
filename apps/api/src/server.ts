@@ -8,6 +8,8 @@ import { Evaluator } from './evaluation/evaluator.js';
 import { ExampleGenerator } from './evaluation/example.js';
 import { OpenAIEvaluationProvider } from './evaluation/openaiProvider.js';
 import { logger } from './logger.js';
+import { HttpProgressTracker } from './progress/httpTracker.js';
+import { noopTracker } from './progress/tracker.js';
 
 function main(): void {
   let config;
@@ -30,11 +32,17 @@ function main(): void {
   const evaluator = new Evaluator(provider, logger);
   const examples = new ExampleGenerator({ apiKey: config.openaiApiKey, model: config.openaiModel, logger });
 
+  const progress = config.progressUrl
+    ? new HttpProgressTracker({ baseUrl: config.progressUrl, topicId: config.progressTopic, logger })
+    : noopTracker;
+  if (!config.progressUrl) logger.info('progress.disabled');
+
   const app = createApp({
     challenges,
     sessions,
     evaluator,
     examples,
+    progress,
     maxTextLength: config.maxTextLength,
     evaluationAvailable: true,
     rateLimit: { max: config.rateLimitMax, windowSeconds: config.rateLimitWindowSeconds },
