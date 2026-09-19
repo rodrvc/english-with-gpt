@@ -1,4 +1,4 @@
-import type { CorrectionCategory } from '@english-practice/shared';
+import { CorrectionCategorySchema, type CorrectionCategory } from '@english-practice/shared';
 
 /**
  * Un hecho que el motor de seguimiento cuenta: en esta fecha, sobre este
@@ -15,8 +15,14 @@ export interface ProgressAttempt {
 
 /**
  * Frontera con el motor de seguimiento. Writing decide si una respuesta fue
- * correcta; el motor solo lleva la cuenta. Que sea un puerto permite que el
- * motor esté caído sin que la evaluación deje de funcionar.
+ * correcta; el motor solo lleva la cuenta.
+ *
+ * `record` propaga sus fallos. Quien llama decide qué hacer con ellos, y hoy
+ * esa decisión —que el historial no puede romper la práctica— vive en la ruta,
+ * en un solo lugar. La alternativa, que el adaptador se los trague, deja la
+ * decisión tomada dos veces y hace que una futura lectura (qué toca repasar)
+ * herede el hábito de devolver vacío en silencio, que ahí sí sería un error:
+ * "nada pendiente" y "no pude preguntar" no son lo mismo.
  */
 export interface ProgressTracker {
   record(attempts: ProgressAttempt[]): Promise<void>;
@@ -36,13 +42,12 @@ export function objectiveFor(category: CorrectionCategory): string {
   return `writing-${category}`;
 }
 
-/** Las categorías que el motor sigue como objetivos. */
-export const TRACKED_CATEGORIES = [
-  'spelling',
-  'grammar',
-  'agreement',
-  'punctuation',
-  'vocabulary',
-  'register',
-  'coherence',
-] as const satisfies readonly CorrectionCategory[];
+/**
+ * Las categorías que el motor sigue como objetivos: todas.
+ *
+ * Derivado, no copiado. Una lista a mano acepta que alguien agregue una
+ * categoría a la taxonomía sin que falle nada: esa categoría simplemente
+ * dejaría de llegar al motor, y el síntoma aparecería meses después como un
+ * nivel que nunca se mueve.
+ */
+export const TRACKED_CATEGORIES: readonly CorrectionCategory[] = CorrectionCategorySchema.options;

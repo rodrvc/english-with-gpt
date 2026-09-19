@@ -24,6 +24,15 @@ class RecordingTracker implements ProgressTracker {
   }
 }
 
+/**
+ * El reporte ocurre después de responder, así que la aserción tiene que
+ * esperar a que la microtarea corra. Sin esto el test pasa por accidente,
+ * porque este doble resuelve en el mismo tick.
+ */
+async function flush(): Promise<void> {
+  await new Promise((resolve) => setImmediate(resolve));
+}
+
 const ORIGIN = 'http://localhost:5173';
 
 class ScriptedProvider implements EvaluationProvider {
@@ -304,6 +313,7 @@ describe('API HTTP', () => {
     provider.queue.push(evaluationFor(text, { score: 70, withError: true }));
     const res = await request(app).post(`/api/v1/sessions/${session.id}/attempts`).send({ text });
     expect(res.status).toBe(201);
+    await flush();
 
     expect(tracker.recorded).toHaveLength(1);
     expect(tracker.recorded[0]!.objectiveId).toBe('writing-spelling');
@@ -316,6 +326,7 @@ describe('API HTTP', () => {
     const text = 'I am writing to you to request some days off.';
     provider.queue.push(evaluationFor(text, { score: 90 }));
     await request(app).post(`/api/v1/sessions/${session.id}/attempts`).send({ text });
+    await flush();
     expect(tracker.recorded).toEqual([]);
   });
 

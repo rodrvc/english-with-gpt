@@ -75,10 +75,18 @@ describe('attemptsFrom', () => {
     expect(attemptsFrom(attempt, evaluation([]))).toEqual([]);
   });
 
-  it('usa un identificador determinista por intento y objetivo, para poder reintentar', () => {
+  it('cuenta los errores de la categoría en la nota, que el motor no interpreta', () => {
+    const result = attemptsFrom(
+      attempt,
+      evaluation([correction({ category: 'grammar' }), correction({ id: 'c2', category: 'grammar' })]),
+    );
+    expect(result[0]!.note).toBe('2 errores');
+  });
+
+  it('usa un identificador determinista por intento, objetivo y signo, para poder reintentar', () => {
     const once = attemptsFrom(attempt, evaluation([correction({ category: 'grammar' })]));
     const twice = attemptsFrom(attempt, evaluation([correction({ category: 'grammar' })]));
-    expect(once[0]!.attemptId).toBe('a1:grammar');
+    expect(once[0]!.attemptId).toBe('a1:grammar:miss');
     expect(twice[0]!.attemptId).toBe(once[0]!.attemptId);
   });
 
