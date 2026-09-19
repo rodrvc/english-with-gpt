@@ -71,6 +71,14 @@ export class Evaluator {
       // descartada por anclaje inválido no es evidencia de nada.
       const corrected = new Set(accepted.map((c) => c.category));
       const exercised = verifyExercised(input.text, parsed.data.exercised, corrected);
+      if (exercised.discarded.length > 0) {
+        // Sin esto no se distingue un modelo que dejó de declarar aciertos de
+        // uno cuyas citas se rechazan por una diferencia invisible.
+        this.logger.warn('evaluation.exercised_discarded', {
+          declared: parsed.data.exercised.length,
+          discarded: exercised.discarded.map((d) => `${d.category}:${d.reason}`),
+        });
+      }
 
       const hasErrors = accepted.some((c) => c.severity === 'error');
       const passed = score >= PASS_THRESHOLD && !hasErrors;
@@ -80,7 +88,7 @@ export class Evaluator {
         breakdown: parsed.data.breakdown,
         breakdownReasons: parsed.data.breakdownReasons,
         corrections: accepted,
-        exercised,
+        exercised: exercised.accepted,
         tips: parsed.data.tips.filter((t) => t.title.trim() && t.body.trim()).slice(0, 4),
         summary: parsed.data.summary,
         passed,
