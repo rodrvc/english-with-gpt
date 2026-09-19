@@ -16,12 +16,13 @@ function correction(partial: Partial<Correction>): Correction {
   };
 }
 
-function evaluation(corrections: Correction[]): Evaluation {
+function evaluation(corrections: Correction[], exercised: Evaluation['exercised'] = []): Evaluation {
   return {
     score: 70,
     breakdown: { grammar: 70, vocabulary: 70, coherence: 70, register: 70 },
     breakdownReasons: { grammar: '', vocabulary: '', coherence: '', register: '' },
     corrections,
+    exercised,
     tips: [],
     summary: '',
     passed: false,
@@ -73,6 +74,20 @@ describe('attemptsFrom', () => {
   it('no reporta acierto por ausencia de corrección', () => {
     // Un texto sin errores no demuestra dominar nada: pudo no ejercitarlo.
     expect(attemptsFrom(attempt, evaluation([]))).toEqual([]);
+  });
+
+  it('reporta un acierto por cada categoría que el servidor verificó', () => {
+    const result = attemptsFrom(attempt, evaluation([], ['grammar', 'register']));
+    expect(result.map((a) => a.objectiveId)).toEqual(['writing-grammar', 'writing-register']);
+    expect(result.every((a) => a.correct)).toBe(true);
+  });
+
+  it('un fallo y un acierto de la misma categoría conviven sobre un intento', () => {
+    // Un texto puede resolver bien una frase y equivocar otra; sin el signo en
+    // la clave, el segundo hecho chocaría con el primero.
+    const result = attemptsFrom(attempt, evaluation([correction({ category: 'grammar' })], ['grammar']));
+    expect(result.map((a) => a.attemptId)).toEqual(['a1:grammar:miss', 'a1:grammar:hit']);
+    expect(result.map((a) => a.correct)).toEqual([false, true]);
   });
 
   it('cuenta los errores de la categoría en la nota, que el motor no interpreta', () => {
